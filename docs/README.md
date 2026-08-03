@@ -22,6 +22,7 @@
 | 产品 | [产品定义](product/product-definition.md) | 明确用户、场景、范围、非目标和成功标准 |
 | 产品 | [领域模型](product/domain-model.md) | 定义核心对象、事实、命令和业务不变量 |
 | 架构 | [系统架构](architecture/system-architecture.md) | 定义架构形态、模块边界、依赖方向和运行约束 |
+| 架构 | [架构决策清单](architecture/decision-backlog.md) | 收敛进入编码前必须完成的关键 ADR |
 | 前端 | [设计系统](frontend/design-system.md) | 定义信息架构、页面模式、视觉语言和交互规则 |
 | 规范 | [API 设计](standards/api-design.md) | 定义读写契约、错误、并发、分页和版本规则 |
 | 规范 | [数据库设计](standards/database-design.md) | 定义事实建模、约束、时间、迁移和性能规则 |
