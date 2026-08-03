@@ -1,0 +1,18 @@
+id: skill-id
+version: 0.1.0
+status: draft
+
+inputs:
+  required: []
+  optional: []
+
+outputs: []
+
+dependencies: []
+
+permissions:
+  read: []
+  write: []
+  forbidden: []
+
+completion: []

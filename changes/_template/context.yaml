@@ -1,0 +1,27 @@
+id: CHG-0000
+name: change-name
+status: draft
+
+goal: ""
+non_goals: []
+domains: []
+
+read_first:
+  - AGENTS.md
+  - ai/repo-map.yaml
+
+allowed_changes: []
+forbidden_changes:
+  - decisions/
+  - reference/
+
+expected_outputs:
+  - proposal.md
+  - specs/
+  - design.md
+  - tasks.md
+
+human_gates:
+  - proposal-review
+  - design-review
+  - implementation-approval

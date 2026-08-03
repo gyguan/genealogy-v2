@@ -1,0 +1,37 @@
+repository:
+  name: genealogy-v2
+  stage: asset-baseline
+  language: zh-CN
+
+read_first:
+  - AGENTS.md
+  - product/README.md
+  - domains/README.md
+  - domains/glossary.yaml
+  - domains/context-map.yaml
+
+sources_of_truth:
+  product: product/
+  domain: domains/
+  active_change: changes/active/
+  decisions: decisions/
+  verification: evals/
+  execution_skills: skills/
+  implementation_knowledge: knowledge/
+
+reference_only:
+  - reference/
+
+not_yet_created:
+  - code directories
+  - public interface baseline
+  - platform architecture baseline
+  - generated artifacts
+  - release manifests
+
+rules:
+  - read the active change context before modifying assets
+  - prefer the smallest sufficient context pack
+  - do not treat reference materials as approved requirements
+  - do not create new domain concepts without an approved change
+  - update verification assets with every behavior change

@@ -1,0 +1,8 @@
+status: draft
+source_of_truth: true
+terms: []
+
+rules:
+  - one business term has one canonical definition
+  - aliases must reference the canonical term
+  - domain documents reference terms instead of redefining them

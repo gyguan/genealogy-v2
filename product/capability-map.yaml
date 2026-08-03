@@ -1,0 +1,9 @@
+status: draft
+source_of_truth: true
+
+capability_groups: []
+
+rules:
+  - every capability must have a stable id
+  - every capability must declare priority and owner
+  - implementation details do not belong in this file

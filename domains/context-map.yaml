@@ -1,0 +1,18 @@
+status: draft
+source_of_truth: true
+
+contexts:
+  - id: person-registry
+    status: planned
+  - id: family-and-kinship
+    status: planned
+  - id: lineage-organization
+    status: planned
+  - id: source-and-evidence
+    status: planned
+  - id: genealogy-project
+    status: planned
+  - id: publication
+    status: planned
+
+relationships: []
