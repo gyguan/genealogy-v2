@@ -32,7 +32,7 @@ evals/ 验证
 ai/          AI 导航、上下文、路由与策略
 skills/      AI 可复用执行能力
 product/     产品目标、定位、能力与路线
- domains/    领域语义、边界与不变量
+domains/     领域语义、边界与不变量
 knowledge/   当前工程事实和自动提取知识
 changes/     单次变更的 OpenSpec 工件和证据
 decisions/   已接受的长期产品、领域和架构决策
