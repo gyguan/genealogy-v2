@@ -5,6 +5,7 @@ repository:
 
 read_first:
   - AGENTS.md
+  - docs/agents/skill-routing.md
   - product/README.md
   - domains/README.md
   - domains/glossary.yaml
@@ -16,18 +17,18 @@ sources_of_truth:
   active_change: changes/active/
   decisions: decisions/
   verification: evals/
-  execution_skills: skills/
+  execution_skills: skills/engineering/
   implementation_knowledge: knowledge/
+
+skill_integration:
+  upstream_source: skills/upstream/mattpocock/source.yaml
+  requirement_route: ai/routing/requirement-development.yaml
+  context_pack: ai/context-packs/requirement-development.yaml
+  precedence: ai/policies/skill-precedence.md
 
 reference_only:
   - reference/
-
-not_yet_created:
-  - code directories
-  - public interface baseline
-  - platform architecture baseline
-  - generated artifacts
-  - release manifests
+  - skills/upstream/
 
 rules:
   - read the active change context before modifying assets
@@ -35,3 +36,4 @@ rules:
   - do not treat reference materials as approved requirements
   - do not create new domain concepts without an approved change
   - update verification assets with every behavior change
+  - project-adapted skills override upstream skills with the same name

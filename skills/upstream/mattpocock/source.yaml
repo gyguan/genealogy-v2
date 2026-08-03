@@ -1,0 +1,22 @@
+name: mattpocock-skills
+repository: https://github.com/mattpocock/skills
+pinned_commit: 2ab958093e83e0ec752e6c1c5932da465bf23e0c
+license: MIT
+checked_at: 2026-08-03
+
+adopted_capabilities:
+  - grill-with-docs
+  - domain-modeling
+  - to-spec
+  - to-tickets
+  - implement
+  - tdd
+  - code-review
+  - diagnosing-bugs
+  - codebase-design
+
+policy:
+  - do not auto-update project-adapted skills
+  - review upstream diffs before adoption
+  - preserve local OpenSpec and domain bindings
+  - record substantial upstream-derived content in THIRD_PARTY_NOTICES.md

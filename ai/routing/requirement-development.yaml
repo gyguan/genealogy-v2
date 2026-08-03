@@ -1,0 +1,41 @@
+id: requirement-development
+purpose: route a requirement from clarification to verified implementation
+
+routes:
+  unclear_requirement:
+    invoke:
+      - grill-with-docs
+      - domain-modeling
+
+  discussed_requirement_ready_for_spec:
+    invoke:
+      - to-spec
+
+  approved_spec_ready_for_breakdown:
+    invoke:
+      - to-tickets
+
+  approved_ticket_ready_for_code:
+    invoke:
+      - implement
+      - tdd
+
+  implementation_ready_for_review:
+    invoke:
+      - code-review
+
+  bug_or_regression:
+    invoke:
+      - diagnosing-bugs
+      - tdd
+      - code-review
+
+  architecture_question:
+    invoke:
+      - codebase-design
+
+human_gates:
+  - proposal-review
+  - design-review
+  - implementation-approval
+  - release-approval

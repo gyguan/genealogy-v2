@@ -1,0 +1,15 @@
+change_id: CHG-0000
+status: draft
+
+seams: []
+
+# seam example
+# - id: SEAM-001
+#   name: household-submission
+#   interface: observable public behavior
+#   reason: highest stable boundary for acceptance behavior
+#   test_types:
+#     - integration
+#   related_specs:
+#     - SPEC-001
+#   approved_by: null
