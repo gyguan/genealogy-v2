@@ -12,11 +12,10 @@ class DesignMarkdownSemanticsTests(unittest.TestCase):
         root = copy_repo(self)
         path = root / CHANGE / "design.md"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("| SEC-GOV-DESIGN-001 |", "| SAFETY-GOV-DESIGN-001 |", 1)
-        text = text.replace("| SEC-GOV-DESIGN-002 |", "| SAFETY-GOV-DESIGN-002 |", 1)
+        text = text.replace("MIG-GOV-DESIGN-001", "MIGRATION-GOV-DESIGN-001", 1)
         text = text.replace(
-            "## 安全与隐私",
-            "## 安全与隐私\n\n- 安全控制\n    - SEC-GOV-DESIGN-NESTED：嵌套列表中的正式安全设计，关联 TEST-DESIGN-SEC-001。",
+            "## 迁移方案",
+            "## 迁移方案\n\n- 迁移控制\n    - MIG-GOV-DESIGN-NESTED：嵌套列表中的正式迁移设计。",
             1,
         )
         path.write_text(text, encoding="utf-8")
