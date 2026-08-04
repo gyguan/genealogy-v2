@@ -27,6 +27,19 @@ class ChangeQualityValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("CHG-DOC-003", result.stdout)
 
+    def test_literal_todo_mention_is_warning_not_error(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "proposal.md"
+        text = path.read_text(encoding="utf-8").replace(
+            "仓库已经具备较强的结构、引用、状态和 PR Head 门禁",
+            "仓库已经具备较强的结构、引用、状态和 PR Head 门禁，并说明如何识别字面量 TODO 标记",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+        result = run(root, "tools/validate_change_quality.py")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("CHG-CONTENT-001", result.stdout)
+
     def test_legacy_empty_section_is_a_warning(self) -> None:
         root = copy_repo(self)
         metadata_path = root / CHANGE / "change.yaml"
@@ -104,6 +117,18 @@ class ChangeQualityValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("SPEC-SCENARIO-004", result.stdout)
 
+    def test_invalid_test_specs_render_diagnostics_without_traceback(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "tests.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["tests"][0]["specs"] = None
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_change_quality.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("TEST-TRACE-001", result.stdout)
+        self.assertIn("Summary:", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
     def test_strict_task_test_reference_must_exist(self) -> None:
         root = copy_repo(self)
         path = root / CHANGE / "tasks.md"
@@ -116,6 +141,18 @@ class ChangeQualityValidationTests(unittest.TestCase):
         result = run(root, "tools/validate_change_quality.py")
         self.assertNotEqual(0, result.returncode)
         self.assertIn("TASK-TEST-001", result.stdout)
+
+    def test_task_test_must_cover_the_tasks_specs(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "tasks.md"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("TEST-GOV-DIAGNOSTICS-001", "TEST-SWAP-TEMP", 1)
+        text = text.replace("TEST-GOV-QUALITY-001", "TEST-GOV-DIAGNOSTICS-001", 1)
+        text = text.replace("TEST-SWAP-TEMP", "TEST-GOV-QUALITY-001", 1)
+        path.write_text(text, encoding="utf-8")
+        result = run(root, "tools/validate_change_quality.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("TASK-TEST-TRACE-001", result.stdout)
 
     def test_every_strict_spec_must_have_test_coverage(self) -> None:
         root = copy_repo(self)
