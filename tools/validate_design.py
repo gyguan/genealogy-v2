@@ -10,19 +10,19 @@ import _validate_design_core as core
 core.REQUIRED_FROM_CHANGE_NUMBER = 7
 
 _original_visible_markdown = core.visible_markdown
+_TRACKED_DEFINITION = re.compile(
+    r"(RULE|INV|CMD|CONSTRAINT|SEC)-[A-Z0-9-]+"
+)
 
 
 def visible_markdown(text: str) -> str:
-    """Normalize block-quote containers before masking Markdown code blocks."""
+    """Exclude block quotes before masking other Markdown code containers."""
     normalized: list[str] = []
     for line in text.splitlines():
-        value = line
-        while True:
-            match = re.match(r"^ {0,3}>[ \t]?", value)
-            if not match:
-                break
-            value = value[match.end():]
-        normalized.append(value)
+        if re.match(r"^ {0,3}>", line):
+            normalized.append("")
+        else:
+            normalized.append(line)
     return _original_visible_markdown("\n".join(normalized))
 
 
@@ -32,16 +32,20 @@ def validate_linked_rows(
     existing_specs: set[str],
     declared_tests: set[str],
 ) -> None:
-    """Validate only definition rows whose first table cell is a tracked ID."""
+    """Validate canonical definition rows whose first table cell is a tracked ID."""
     for line in section.splitlines():
         cells = core.table_cells(line)
         if not cells:
             continue
         definition_id = cells[0]
-        match = re.fullmatch(
-            r"(RULE|INV|CMD|CONSTRAINT|SEC)-[A-Z0-9-]+",
-            definition_id,
-        )
+        tracked = _TRACKED_DEFINITION.search(definition_id)
+        match = re.fullmatch(_TRACKED_DEFINITION, definition_id)
+        if tracked and not match:
+            core.fail(
+                f"{core.rel(path)}: definition ID must be canonical plain text: "
+                f"{tracked.group(0)}"
+            )
+            continue
         if not match:
             continue
 
@@ -76,7 +80,7 @@ def validate_linked_rows(
 
 
 def validate_test_registry(change_dir) -> None:
-    """Require the Design checklist to match the formal tests.yaml registry."""
+    """Require Design tests and Spec coverage to match the formal registry."""
     change_path = change_dir / "change.yaml"
     design_path = change_dir / "design.md"
     if not change_path.is_file() or not design_path.is_file():
@@ -110,15 +114,24 @@ def validate_test_registry(change_dir) -> None:
         core.fail(f"{core.rel(registry_path)}: tests must be a list")
         return
 
-    registry_tests: set[str] = set()
+    registry_coverage: dict[str, set[str]] = {}
     for index, entry in enumerate(entries):
         if not isinstance(entry, dict) or not isinstance(entry.get("id"), str):
             core.fail(
                 f"{core.rel(registry_path)}: tests[{index}] must declare string id"
             )
             continue
-        registry_tests.add(entry["id"])
+        specs = entry.get("specs")
+        if not isinstance(specs, list) or any(
+            not isinstance(spec_id, str) for spec_id in specs
+        ):
+            core.fail(
+                f"{core.rel(registry_path)}: tests[{index}].specs must be a string list"
+            )
+            continue
+        registry_coverage[entry["id"]] = set(specs)
 
+    registry_tests = set(registry_coverage)
     unregistered = sorted(design_tests - registry_tests)
     omitted = sorted(registry_tests - design_tests)
     if unregistered:
@@ -131,6 +144,25 @@ def validate_test_registry(change_dir) -> None:
             f"{core.rel(design_path)}: tests.yaml Test(s) missing from "
             f"Design checklist: {', '.join(omitted)}"
         )
+
+    trace = core.subsection_body(test_seam or "", "Spec 追踪矩阵")
+    for cells in core.table_data_rows(trace or ""):
+        if not cells or not re.fullmatch(r"SPEC-[A-Z0-9-]+", cells[0]):
+            continue
+        spec_id = cells[0]
+        test_references = core.exact_ids(" | ".join(cells[1:]), "TEST-")
+        wrong_coverage = sorted(
+            test_id
+            for test_id in test_references
+            if test_id in registry_coverage
+            and spec_id not in registry_coverage[test_id]
+        )
+        if wrong_coverage:
+            core.fail(
+                f"{core.rel(design_path)}: Spec traceability row {spec_id} "
+                f"uses Test(s) without registered coverage: "
+                f"{', '.join(wrong_coverage)}"
+            )
 
 
 core.visible_markdown = visible_markdown
