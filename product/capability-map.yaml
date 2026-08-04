@@ -1,45 +1,952 @@
-version: 1
-status: draft
+version: 2
+status: approved
+updated_at: 2026-08-04
+
+release_definitions:
+  - id: V0.1
+    name: 基础谱系模型验证版
+    goal: 建立人物、普通家庭关系、谱系组织与基础世系查询闭环
+  - id: V0.2
+    name: 资料采集与审核版
+    goal: 支持修谱团队按支房户分工采集并完成多级审核
+  - id: V0.3
+    name: 中国式复杂谱系版
+    goal: 正确表达复杂亲属、谱籍承继、字辈和历史时空语义
+  - id: V0.4
+    name: 证据与质量治理版
+    goal: 建立来源、主张、证据、审核、正式事实和质量治理闭环
+  - id: V0.5
+    name: 谱书编修与出版版
+    goal: 从结构化事实生成可评审、可冻结、可交付的谱书版本
+  - id: V1.0
+    name: 首个可商用版本
+    goal: 完成一部真实族谱从项目创建到数据与谱书交付的端到端过程
+  - id: V1.1
+    name: 旧谱数字化版
+    goal: 支持扫描件、OCR、结构抽取、校对和批量入库
+  - id: V1.2
+    name: 专业机构运营版
+    goal: 支持专业修谱机构多项目运营、模板复用和商业交付
+  - id: V2.0
+    name: 平台与生态版
+    goal: 支持跨谱协作、专家服务和受控AI辅助
 
 capability_groups:
-  - id: CAP-GROUP-PERSON
-    name: 人物与身份
+  - id: CAP-GROUP-ORG
+    name: 宗族、机构与组织
     capabilities:
-      - id: CAP-PERSON-001
-        name: 人物稳定身份与多姓名管理
-        priority: P0
-        domain: person-registry
-  - id: CAP-GROUP-KINSHIP
-    name: 家庭与谱系
-    capabilities:
-      - id: CAP-KINSHIP-001
-        name: 多维家庭与亲属关系管理
-        priority: P0
-        domain: family-and-kinship
-      - id: CAP-LINEAGE-001
-        name: 宗派支房户组织管理
-        priority: P0
-        domain: lineage-organization
-  - id: CAP-GROUP-EVIDENCE
-    name: 来源与证据
-    capabilities:
-      - id: CAP-EVIDENCE-001
-        name: 来源、主张、证据与正式事实追溯
-        priority: P0
-        domain: source-and-evidence
-  - id: CAP-GROUP-PROJECT
-    name: 修谱协作与交付
-    capabilities:
-      - id: CAP-PROJECT-001
-        name: 修谱项目采集、审核与进度管理
+      - id: CAP-ORG-001
+        name: 宗族与机构工作空间
+        description: 为单一宗族或专业修谱机构建立隔离的工作空间
         priority: P0
         domain: genealogy-project
-      - id: CAP-PUBLICATION-001
-        name: 不可变出版快照与谱书交付
+        target_release: V0.2
+        status: planned
+        depends_on: []
+      - id: CAP-ORG-002
+        name: 姓氏、堂号与修谱范围
+        description: 定义本次修谱覆盖的姓氏、堂号、地域和谱系范围
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-ORG-001
+      - id: CAP-ORG-003
+        name: 修谱委员会与组织岗位
+        description: 管理主编、总纂、支房负责人、采集员和审核员等岗位
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-ORG-001
+      - id: CAP-ORG-004
+        name: 成员、角色与职责分配
+        description: 将成员分配到组织岗位、项目范围和数据责任范围
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-ORG-003
+      - id: CAP-ORG-005
+        name: 专业机构多项目运营
+        description: 支持专业修谱机构统一管理多个客户和修谱项目
+        priority: P1
+        domain: genealogy-project
+        target_release: V1.2
+        status: planned
+        depends_on:
+          - CAP-ORG-001
+          - CAP-PROJECT-006
+
+  - id: CAP-GROUP-PROJECT
+    name: 修谱项目与协作交付
+    capabilities:
+      - id: CAP-PROJECT-001
+        name: 修谱项目创建
+        description: 创建项目并定义基本目标、范围和负责人
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.1
+        status: planned
+        depends_on: []
+      - id: CAP-PROJECT-002
+        name: 阶段、里程碑与范围管理
+        description: 管理项目阶段、里程碑、修谱范围和完成标准
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-PROJECT-001
+      - id: CAP-PROJECT-003
+        name: 支房户任务分配
+        description: 按谱系范围将采集、校对和审核任务分配给责任人
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-PROJECT-002
+          - CAP-LINEAGE-001
+      - id: CAP-PROJECT-004
+        name: 进度、问题与阻塞管理
+        description: 统计采集和审核进度并管理问题、逾期和阻塞
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-PROJECT-003
+      - id: CAP-PROJECT-005
+        name: 通知与待办
+        description: 对提交、驳回、待审核、逾期和交付节点发送通知
+        priority: P1
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-PROJECT-003
+      - id: CAP-PROJECT-006
+        name: 项目模板与复用
+        description: 复用组织、流程、表单、规则和出版配置
+        priority: P1
+        domain: genealogy-project
+        target_release: V1.2
+        status: planned
+        depends_on:
+          - CAP-PROJECT-002
+      - id: CAP-PROJECT-007
+        name: 项目交付与归档
+        description: 冻结交付范围并归档数据、谱书、报告和审计证据
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PUBLICATION-008
+          - CAP-PLATFORM-005
+
+  - id: CAP-GROUP-PERSON
+    name: 人物身份与姓名
+    capabilities:
+      - id: CAP-PERSON-001
+        name: 人物稳定身份
+        description: 为自然人建立不随姓名、家庭角色和谱系归属变化的稳定身份
+        priority: P0
+        domain: person-registry
+        target_release: V0.1
+        status: planned
+        depends_on: []
+      - id: CAP-PERSON-002
+        name: 多姓名管理
+        description: 支持本名、谱名、字、号、乳名和曾用名及其使用范围
+        priority: P0
+        domain: person-registry
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+      - id: CAP-PERSON-003
+        name: 基础生平信息
+        description: 维护性别、生卒、排行、简介和基础人物属性
+        priority: P0
+        domain: person-registry
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+      - id: CAP-PERSON-004
+        name: 人物历史日期与地点
+        description: 关联模糊日期、历史纪年、历史地点和现代地点映射
+        priority: P0
+        domain: person-registry
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-PERSON-003
+          - CAP-HISTORY-001
+          - CAP-HISTORY-003
+      - id: CAP-PERSON-005
+        name: 人物合并与拆分
+        description: 处理重复人物、错误合并和身份冲突并保留历史
+        priority: P0
+        domain: person-registry
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+          - CAP-EVIDENCE-007
+      - id: CAP-PERSON-006
+        name: 人物修订与版本历史
+        description: 记录人物字段的修改、审核、回退和版本差异
+        priority: P0
+        domain: person-registry
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+          - CAP-EVIDENCE-009
+      - id: CAP-PERSON-007
+        name: 在世人物隐私保护
+        description: 按授权范围控制在世人物和敏感信息的采集与展示
+        priority: P0
+        domain: person-registry
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+          - CAP-PLATFORM-002
+
+  - id: CAP-GROUP-LINEAGE
+    name: 谱系组织与字辈世次
+    capabilities:
+      - id: CAP-LINEAGE-001
+        name: 宗派支房户组织树
+        description: 建立宗、派、支、房、户等可配置谱系组织层级
+        priority: P0
+        domain: lineage-organization
+        target_release: V0.1
+        status: planned
+        depends_on: []
+      - id: CAP-LINEAGE-002
+        name: 始祖、始迁祖与开基祖
+        description: 标记不同范围的祖先角色及其适用谱系节点
+        priority: P0
+        domain: lineage-organization
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-LINEAGE-001
+          - CAP-PERSON-001
+      - id: CAP-LINEAGE-003
+        name: 人物谱系归属
+        description: 将人物身份与特定谱系节点和归属时期建立关联
+        priority: P0
+        domain: lineage-organization
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-LINEAGE-001
+          - CAP-PERSON-001
+      - id: CAP-LINEAGE-004
+        name: 字辈与世次规则
+        description: 管理字辈谱、世次计算和不同支系的排行规则
+        priority: P0
+        domain: lineage-organization
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-LINEAGE-001
+          - CAP-KINSHIP-002
+      - id: CAP-LINEAGE-005
+        name: 分支、迁移与合并历史
+        description: 记录支房形成、迁移、分立和组织调整过程
+        priority: P0
+        domain: lineage-organization
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-LINEAGE-001
+          - CAP-HISTORY-005
+      - id: CAP-LINEAGE-006
+        name: 祖籍、郡望与地域范围
+        description: 管理谱系组织关联的祖籍、郡望、聚居地和地域变化
+        priority: P1
+        domain: lineage-organization
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-HISTORY-003
+      - id: CAP-LINEAGE-007
+        name: 支房负责人
+        description: 为谱系节点维护当前项目中的资料和审核责任人
+        priority: P0
+        domain: lineage-organization
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-LINEAGE-001
+          - CAP-ORG-004
+
+  - id: CAP-GROUP-KINSHIP
+    name: 家庭与中国式亲属关系
+    capabilities:
+      - id: CAP-KINSHIP-001
+        name: 配偶关系
+        description: 管理婚姻、婚次、时间范围和关系状态
+        priority: P0
+        domain: family-and-kinship
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+      - id: CAP-KINSHIP-002
+        name: 生物亲子关系
+        description: 管理生物父母与子女关系并防止祖先环
+        priority: P0
+        domain: family-and-kinship
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+      - id: CAP-KINSHIP-003
+        name: 收养与抚养关系
+        description: 区分法律收养、实际抚养和生物亲缘关系
+        priority: P0
+        domain: family-and-kinship
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-002
+      - id: CAP-KINSHIP-004
+        name: 继父母与继家庭
+        description: 表达再婚家庭中的继父母、继子女和家庭成员关系
+        priority: P1
+        domain: family-and-kinship
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-001
+          - CAP-KINSHIP-002
+      - id: CAP-KINSHIP-005
+        name: 继嗣与出嗣
+        description: 将谱籍承继关系与生物亲缘、家庭关系分离表达
+        priority: P0
+        domain: family-and-kinship
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-002
+          - CAP-LINEAGE-003
+      - id: CAP-KINSHIP-006
+        name: 兼祧关系
+        description: 支持一人承继多个房系并保持各房系语义独立
+        priority: P0
+        domain: family-and-kinship
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-005
+      - id: CAP-KINSHIP-007
+        name: 入赘与从妻居
+        description: 表达婚姻、居住、姓氏和谱籍归属的组合变化
+        priority: P1
+        domain: family-and-kinship
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-001
+          - CAP-LINEAGE-003
+      - id: CAP-KINSHIP-008
+        name: 多婚次与多家庭单元
+        description: 支持再婚、多配偶历史和多个家庭单元的时序表达
+        priority: P0
+        domain: family-and-kinship
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-001
+      - id: CAP-KINSHIP-009
+        name: 关系争议、更正与撤销
+        description: 对存在争议或录入错误的关系进行审核、修订和撤销
+        priority: P0
+        domain: family-and-kinship
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-005
+          - CAP-EVIDENCE-007
+
+  - id: CAP-GROUP-HISTORY
+    name: 历史日期、地点与事件
+    capabilities:
+      - id: CAP-HISTORY-001
+        name: 模糊与区间日期
+        description: 支持约、前、后、区间和仅年份等非精确日期
+        priority: P0
+        domain: person-registry
+        target_release: V0.3
+        status: planned
+        depends_on: []
+      - id: CAP-HISTORY-002
+        name: 公历、农历与历史纪年
+        description: 保存原始纪年表达并提供规范化换算和不确定性说明
+        priority: P0
+        domain: person-registry
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-HISTORY-001
+      - id: CAP-HISTORY-003
+        name: 历史地点与现代映射
+        description: 管理历史行政区、地点别名和现代地理位置映射
+        priority: P0
+        domain: person-registry
+        target_release: V0.3
+        status: planned
+        depends_on: []
+      - id: CAP-HISTORY-004
+        name: 人物生命事件
+        description: 管理出生、婚姻、死亡、任职、功名和重要经历
+        priority: P1
+        domain: person-registry
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+          - CAP-HISTORY-001
+          - CAP-HISTORY-003
+      - id: CAP-HISTORY-005
+        name: 迁徙事件与路线
+        description: 记录人物或谱系组织的迁出、迁入和迁徙路线
+        priority: P0
+        domain: lineage-organization
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-HISTORY-003
+          - CAP-PERSON-001
+      - id: CAP-HISTORY-006
+        name: 祠堂、墓葬与文化地点
+        description: 维护与人物和谱系相关的祠堂、墓葬、碑刻和文化地点
+        priority: P1
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-HISTORY-003
+          - CAP-EVIDENCE-001
+
+  - id: CAP-GROUP-EVIDENCE
+    name: 来源、主张、证据与质量
+    capabilities:
+      - id: CAP-EVIDENCE-001
+        name: 来源登记
+        description: 管理旧谱、档案、碑刻、口述、图片、文件和网页来源
+        priority: P0
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on: []
+      - id: CAP-EVIDENCE-002
+        name: 引文与定位
+        description: 从来源中记录页码、区域、原文和可复核定位信息
+        priority: P0
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-001
+      - id: CAP-EVIDENCE-003
+        name: 事实主张
+        description: 将尚待确认的人物、关系、日期和地点陈述建模为主张
+        priority: P0
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-002
+      - id: CAP-EVIDENCE-004
+        name: 证据关联
+        description: 建立证据对主张的支持、反驳和不确定关联
+        priority: P0
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-003
+      - id: CAP-EVIDENCE-005
+        name: 矛盾主张与争议处理
+        description: 并存展示相互冲突的主张、证据和处理状态
+        priority: P0
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-004
+      - id: CAP-EVIDENCE-006
+        name: 可信度与质量等级
+        description: 按来源类型、证据充分性和审核结果评估质量
+        priority: P1
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-004
+      - id: CAP-EVIDENCE-007
+        name: 审核形成正式事实
+        description: 经过授权审核后将主张确认为正式事实或驳回
+        priority: P0
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-003
+          - CAP-EVIDENCE-004
+      - id: CAP-EVIDENCE-008
+        name: 来源权利与使用许可
+        description: 记录来源版权、授权范围和出版使用限制
+        priority: P0
+        domain: source-and-evidence
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-001
+      - id: CAP-EVIDENCE-009
+        name: 全链路溯源
+        description: 从正式事实追溯到审核、主张、证据、引文和来源
+        priority: P0
+        domain: source-and-evidence
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-007
+
+  - id: CAP-GROUP-COLLECTION
+    name: 资料采集与协同审核
+    capabilities:
+      - id: CAP-COLLECT-001
+        name: 采集表单模板
+        description: 按项目和资料类型配置人物、家庭和来源采集表单
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-PROJECT-001
+      - id: CAP-COLLECT-002
+        name: 按支房户采集
+        description: 按谱系任务范围组织人物、家庭和资料采集
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-PROJECT-003
+          - CAP-COLLECT-001
+      - id: CAP-COLLECT-003
+        name: 在线填报与暂存
+        description: 支持采集人员在线录入、暂存、补充和提交
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-COLLECT-002
+      - id: CAP-COLLECT-004
+        name: Excel采集导入导出
+        description: 提供模板下载、离线填报、预检查和批量导入
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-COLLECT-001
+      - id: CAP-COLLECT-005
+        name: 草稿、提交与撤回
+        description: 管理采集数据从草稿到提交和允许范围内撤回的状态
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-COLLECT-003
+      - id: CAP-COLLECT-006
+        name: 多级审核与驳回补充
+        description: 支持房支审核、项目审核以及驳回、补充和重新提交
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.2
+        status: planned
+        depends_on:
+          - CAP-COLLECT-005
+          - CAP-ORG-004
+      - id: CAP-COLLECT-007
+        name: 数据冲突检测
+        description: 识别重复人物、关系矛盾、世次异常和字段冲突
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-PERSON-005
+          - CAP-KINSHIP-009
+      - id: CAP-COLLECT-008
+        name: 数据质量报告
+        description: 按项目、支房和问题类型生成完整性与质量报告
+        priority: P0
+        domain: genealogy-project
+        target_release: V0.4
+        status: planned
+        depends_on:
+          - CAP-COLLECT-007
+          - CAP-EVIDENCE-006
+
+  - id: CAP-GROUP-DIGITIZATION
+    name: 数据导入与旧谱数字化
+    capabilities:
+      - id: CAP-DIGI-001
+        name: 扫描件与数字资产管理
+        description: 管理旧谱扫描件、照片、音视频和关联元数据
+        priority: P0
+        domain: source-and-evidence
+        target_release: V1.1
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-001
+      - id: CAP-DIGI-002
+        name: OCR文字识别
+        description: 对扫描件执行文字识别并保留版面定位和置信度
+        priority: P0
+        domain: source-and-evidence
+        target_release: V1.1
+        status: planned
+        depends_on:
+          - CAP-DIGI-001
+      - id: CAP-DIGI-003
+        name: 版面与谱式分析
+        description: 识别世系表、世系录、序跋和其他版面区域
+        priority: P0
+        domain: source-and-evidence
+        target_release: V1.1
+        status: planned
+        depends_on:
+          - CAP-DIGI-002
+      - id: CAP-DIGI-004
+        name: 人物与关系候选抽取
+        description: 从识别结果中生成待校对的人物、姓名和关系候选
+        priority: P0
+        domain: source-and-evidence
+        target_release: V1.1
+        status: planned
+        depends_on:
+          - CAP-DIGI-003
+          - CAP-PERSON-001
+      - id: CAP-DIGI-005
+        name: 数字化校对工作台
+        description: 对原图、识别文本、结构候选和正式数据进行对照校对
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.1
+        status: planned
+        depends_on:
+          - CAP-DIGI-004
+          - CAP-EVIDENCE-003
+      - id: CAP-DIGI-006
+        name: 导入预检查与回滚
+        description: 在正式导入前预览影响、冲突和质量并支持批次回滚
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-COLLECT-007
+      - id: CAP-DIGI-007
+        name: 标准格式与旧系统迁移
+        description: 支持GEDCOM、结构化文件和旧系统数据的受控迁移
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-DIGI-006
+          - CAP-PLATFORM-005
+
+  - id: CAP-GROUP-QUERY
+    name: 查询、世系图与阅读
+    capabilities:
+      - id: CAP-QUERY-001
+        name: 人物与谱系搜索
+        description: 按姓名、别名、支房、地点和其他授权字段搜索
         priority: P0
         domain: publication
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-PERSON-001
+          - CAP-LINEAGE-001
+      - id: CAP-QUERY-002
+        name: 人物详情阅读
+        description: 聚合人物姓名、生平、关系、谱系、事件和来源摘要
+        priority: P0
+        domain: publication
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-PERSON-003
+          - CAP-KINSHIP-001
+          - CAP-LINEAGE-003
+      - id: CAP-QUERY-003
+        name: 祖先上溯与后裔下查
+        description: 按代数查询祖先链和后裔树并处理合法关系类型
+        priority: P0
+        domain: publication
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-002
+      - id: CAP-QUERY-004
+        name: 多代世系图
+        description: 生成可展开、可定位和可打印的多代世系视图
+        priority: P0
+        domain: publication
+        target_release: V0.1
+        status: planned
+        depends_on:
+          - CAP-QUERY-003
+      - id: CAP-QUERY-005
+        name: 亲属关系路径
+        description: 基于多维关系计算并解释两个人之间的关系路径
+        priority: P1
+        domain: publication
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-KINSHIP-003
+          - CAP-KINSHIP-005
+      - id: CAP-QUERY-006
+        name: 字辈与世次查询
+        description: 按谱系节点查询字辈、排行和世次异常
+        priority: P0
+        domain: publication
+        target_release: V0.3
+        status: planned
+        depends_on:
+          - CAP-LINEAGE-004
+      - id: CAP-QUERY-007
+        name: 迁徙地图与人物时间线
+        description: 展示谱系迁徙、人物事件和历史地点变化
+        priority: P1
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-HISTORY-004
+          - CAP-HISTORY-005
+      - id: CAP-QUERY-008
+        name: 授权阅读与隐私视图
+        description: 根据身份、用途和出版范围生成不同的阅读内容
+        priority: P0
+        domain: publication
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PERSON-007
+          - CAP-PLATFORM-002
+
+  - id: CAP-GROUP-PUBLICATION
+    name: 谱书编修与出版
+    capabilities:
+      - id: CAP-PUBLICATION-001
+        name: 谱书项目与目录结构
+        description: 创建谱书版本并编排序跋、凡例、世系、传记和附录
+        priority: P0
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-PROJECT-001
+      - id: CAP-PUBLICATION-002
+        name: 编辑内容与文化资料
+        description: 管理序跋、传记、祠堂、墓志、艺文和图片等内容
+        priority: P0
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-PUBLICATION-001
+          - CAP-HISTORY-006
+      - id: CAP-PUBLICATION-003
+        name: 世系图与世系录生成
+        description: 从正式事实生成符合出版规则的世系图和世系录
+        priority: P0
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-QUERY-004
+          - CAP-EVIDENCE-007
+      - id: CAP-PUBLICATION-004
+        name: 编排与显示规则
+        description: 配置版式、姓名显示、关系标记、世次和内容选择规则
+        priority: P0
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-PUBLICATION-003
+      - id: CAP-PUBLICATION-005
+        name: 隐私脱敏与内容排除
+        description: 在出版前按授权规则隐藏、概化或排除敏感信息
+        priority: P0
+        domain: publication
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PERSON-007
+          - CAP-PUBLICATION-004
+      - id: CAP-PUBLICATION-006
+        name: 不可变出版快照
+        description: 冻结数据版本、选择范围、规则和内容形成可复现快照
+        priority: P0
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-PUBLICATION-004
+      - id: CAP-PUBLICATION-007
+        name: PDF预览与印刷输出
+        description: 生成可评审PDF、印刷文件和版面问题报告
+        priority: P0
+        domain: publication
+        target_release: V0.5
+        status: planned
+        depends_on:
+          - CAP-PUBLICATION-006
+      - id: CAP-PUBLICATION-008
+        name: 版本修订、勘误与交付包
+        description: 管理谱书版本、勘误、再版以及数据和文档交付包
+        priority: P0
+        domain: publication
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PUBLICATION-007
+          - CAP-PLATFORM-005
+
+  - id: CAP-GROUP-PLATFORM
+    name: 平台治理与商业交付
+    capabilities:
+      - id: CAP-PLATFORM-001
+        name: 角色权限
+        description: 管理项目角色、操作权限和审批权限
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-ORG-004
+      - id: CAP-PLATFORM-002
+        name: 数据范围与隐私授权
+        description: 按租户、项目、支房、人物和用途控制数据访问范围
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PLATFORM-001
+      - id: CAP-PLATFORM-003
+        name: 操作审计与安全日志
+        description: 记录敏感操作、审批、导出、发布和权限变更
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PLATFORM-001
+      - id: CAP-PLATFORM-004
+        name: 备份、恢复与灾备
+        description: 支持项目级备份、恢复验证和灾难恢复
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on: []
+      - id: CAP-PLATFORM-005
+        name: 数据可迁出与标准交付
+        description: 导出结构化数据、附件、来源、审计和版本信息
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PLATFORM-004
+      - id: CAP-PLATFORM-006
+        name: 开放API与集成
+        description: 为授权系统提供人物、谱系、项目和出版集成接口
+        priority: P1
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PLATFORM-001
+          - CAP-PLATFORM-002
+      - id: CAP-PLATFORM-007
+        name: 私有化部署
+        description: 支持机构独立环境部署、升级和交付验收
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PLATFORM-004
+      - id: CAP-PLATFORM-008
+        name: 多租户与机构隔离
+        description: 支持专业机构服务多个客户并保持数据和配置隔离
+        priority: P1
+        domain: genealogy-project
+        target_release: V1.2
+        status: planned
+        depends_on:
+          - CAP-ORG-005
+          - CAP-PLATFORM-002
+      - id: CAP-PLATFORM-009
+        name: 监控、容量与性能治理
+        description: 管理可用性、性能、容量、任务和出版作业运行状态
+        priority: P0
+        domain: genealogy-project
+        target_release: V1.0
+        status: planned
+        depends_on:
+          - CAP-PLATFORM-007
+      - id: CAP-PLATFORM-010
+        name: 商业版本与项目计费
+        description: 支持机构版本、项目套餐、容量和交付服务计费
+        priority: P2
+        domain: genealogy-project
+        target_release: V1.2
+        status: planned
+        depends_on:
+          - CAP-ORG-005
+      - id: CAP-PLATFORM-011
+        name: 受控AI辅助
+        description: 支持资料抽取、匹配、质量提示和编修建议且不绕过人工审核
+        priority: P2
+        domain: genealogy-project
+        target_release: V2.0
+        status: planned
+        depends_on:
+          - CAP-EVIDENCE-007
+          - CAP-DIGI-005
+          - CAP-PLATFORM-003
 
 rules:
-  - every capability has a stable id
-  - every capability declares priority and owning domain
-  - implementation details do not belong here
+  - every capability has a stable id, name, description, priority, domain, target_release, status and depends_on
+  - priority uses P0 for release-critical, P1 for important enhancement and P2 for later or experimental scope
+  - status uses candidate, planned, in-progress, delivered or deprecated
+  - dependencies reference capability ids and must not form a cycle
+  - implementation details, interfaces and database structures do not belong here
+  - capability changes must be introduced through an approved product Change

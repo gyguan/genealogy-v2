@@ -1,0 +1,135 @@
+version: 1
+id: CHG-0002
+title: product-blueprint-and-roadmap
+change_type: product
+status: completed
+
+issue:
+  repository: gyguan/genealogy-v2
+  number: 4
+
+capabilities:
+  - CAP-ORG-001
+  - CAP-ORG-002
+  - CAP-ORG-003
+  - CAP-ORG-004
+  - CAP-ORG-005
+  - CAP-PROJECT-001
+  - CAP-PROJECT-002
+  - CAP-PROJECT-003
+  - CAP-PROJECT-004
+  - CAP-PROJECT-005
+  - CAP-PROJECT-006
+  - CAP-PROJECT-007
+  - CAP-PERSON-001
+  - CAP-PERSON-002
+  - CAP-PERSON-003
+  - CAP-PERSON-004
+  - CAP-PERSON-005
+  - CAP-PERSON-006
+  - CAP-PERSON-007
+  - CAP-LINEAGE-001
+  - CAP-LINEAGE-002
+  - CAP-LINEAGE-003
+  - CAP-LINEAGE-004
+  - CAP-LINEAGE-005
+  - CAP-LINEAGE-006
+  - CAP-LINEAGE-007
+  - CAP-KINSHIP-001
+  - CAP-KINSHIP-002
+  - CAP-KINSHIP-003
+  - CAP-KINSHIP-004
+  - CAP-KINSHIP-005
+  - CAP-KINSHIP-006
+  - CAP-KINSHIP-007
+  - CAP-KINSHIP-008
+  - CAP-KINSHIP-009
+  - CAP-HISTORY-001
+  - CAP-HISTORY-002
+  - CAP-HISTORY-003
+  - CAP-HISTORY-004
+  - CAP-HISTORY-005
+  - CAP-HISTORY-006
+  - CAP-EVIDENCE-001
+  - CAP-EVIDENCE-002
+  - CAP-EVIDENCE-003
+  - CAP-EVIDENCE-004
+  - CAP-EVIDENCE-005
+  - CAP-EVIDENCE-006
+  - CAP-EVIDENCE-007
+  - CAP-EVIDENCE-008
+  - CAP-EVIDENCE-009
+  - CAP-COLLECT-001
+  - CAP-COLLECT-002
+  - CAP-COLLECT-003
+  - CAP-COLLECT-004
+  - CAP-COLLECT-005
+  - CAP-COLLECT-006
+  - CAP-COLLECT-007
+  - CAP-COLLECT-008
+  - CAP-DIGI-001
+  - CAP-DIGI-002
+  - CAP-DIGI-003
+  - CAP-DIGI-004
+  - CAP-DIGI-005
+  - CAP-DIGI-006
+  - CAP-DIGI-007
+  - CAP-QUERY-001
+  - CAP-QUERY-002
+  - CAP-QUERY-003
+  - CAP-QUERY-004
+  - CAP-QUERY-005
+  - CAP-QUERY-006
+  - CAP-QUERY-007
+  - CAP-QUERY-008
+  - CAP-PUBLICATION-001
+  - CAP-PUBLICATION-002
+  - CAP-PUBLICATION-003
+  - CAP-PUBLICATION-004
+  - CAP-PUBLICATION-005
+  - CAP-PUBLICATION-006
+  - CAP-PUBLICATION-007
+  - CAP-PUBLICATION-008
+  - CAP-PLATFORM-001
+  - CAP-PLATFORM-002
+  - CAP-PLATFORM-003
+  - CAP-PLATFORM-004
+  - CAP-PLATFORM-005
+  - CAP-PLATFORM-006
+  - CAP-PLATFORM-007
+  - CAP-PLATFORM-008
+  - CAP-PLATFORM-009
+  - CAP-PLATFORM-010
+  - CAP-PLATFORM-011
+
+affected_domains:
+  - person-registry
+  - family-and-kinship
+  - lineage-organization
+  - source-and-evidence
+  - genealogy-project
+  - publication
+affected_decisions:
+  - DEC-0002
+  - DEC-0003
+  - DEC-0004
+  - DEC-0005
+
+gates:
+  spec_review:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T10:30:00+08:00
+    evidence: evidence/spec-review.md
+  implementation_approval:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T10:32:00+08:00
+    evidence: evidence/implementation-approval.md
+  release_approval:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T10:37:00+08:00
+    evidence: evidence/release-approval.md
+
+cancellation_reason: null
