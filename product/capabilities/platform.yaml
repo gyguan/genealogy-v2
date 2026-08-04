@@ -1,0 +1,172 @@
+version: 1
+group:
+  id: CAP-GROUP-PLATFORM
+  name: 平台治理与商业交付
+  capabilities:
+  - id: CAP-PLATFORM-001
+    name: 商用级权限策略与审批权分离
+    description: 在基础项目授权之上管理细粒度操作权限、审批权分离和敏感操作控制
+    capability_type: platform
+    platform_area: identity-access
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-ACCESS-003
+  - id: CAP-PLATFORM-002
+    name: 细粒度数据范围与用途授权
+    description: 按租户、项目、支房、人物、字段和用途控制数据访问范围
+    capability_type: platform
+    platform_area: privacy-authorization
+    primary_domain: genealogy-project
+    supporting_domains:
+    - person-registry
+    - publication
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PLATFORM-001
+    - CAP-ACCESS-004
+  - id: CAP-PLATFORM-003
+    name: 商用安全审计与日志治理
+    description: 对敏感操作、审批、导出、发布和权限变更形成不可抵赖的安全审计
+    capability_type: platform
+    platform_area: security-audit
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PLATFORM-001
+    - CAP-EVIDENCE-011
+  - id: CAP-PLATFORM-004
+    name: 项目级备份与恢复
+    description: 从早期版本开始支持项目数据、附件和配置的备份与恢复验证
+    capability_type: platform
+    platform_area: resilience
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-PLATFORM-005
+    name: 数据可迁出与标准交付
+    description: 导出结构化数据、附件、来源、审计和版本信息
+    capability_type: platform
+    platform_area: data-portability
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PLATFORM-004
+    - CAP-PORT-005
+  - id: CAP-PLATFORM-006
+    name: 开放API与集成
+    description: 为授权系统提供人物、谱系、项目和出版集成接口
+    capability_type: platform
+    platform_area: integration
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: should
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PLATFORM-001
+    - CAP-PLATFORM-002
+  - id: CAP-PLATFORM-007
+    name: 私有化部署
+    description: 支持机构独立环境部署、升级和交付验收
+    capability_type: platform
+    platform_area: deployment
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PLATFORM-004
+  - id: CAP-PLATFORM-008
+    name: 多租户与机构隔离
+    description: 支持专业机构服务多个客户并保持数据和配置隔离
+    capability_type: platform
+    platform_area: tenancy
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.2
+    release_priority: should
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ORG-005
+    - CAP-PLATFORM-002
+  - id: CAP-PLATFORM-009
+    name: 监控、容量与性能治理
+    description: 管理可用性、性能、容量、任务和出版作业运行状态
+    capability_type: platform
+    platform_area: observability
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PLATFORM-007
+  - id: CAP-PLATFORM-010
+    name: 商业版本与项目计费
+    description: 支持机构版本、项目套餐、容量和交付服务计费
+    capability_type: platform
+    platform_area: commerce
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.2
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ORG-005
+  - id: CAP-PLATFORM-011
+    name: 受控AI辅助
+    description: 支持资料抽取、匹配、质量提示和编修建议且不绕过人工审核
+    capability_type: platform
+    platform_area: ai-assistance
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V2.0
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-EVIDENCE-007
+    - CAP-DIGI-005
+    - CAP-PLATFORM-003
+  - id: CAP-PLATFORM-012
+    name: 灾难恢复与恢复演练
+    description: 在商用验收前完成灾难恢复方案、恢复时间目标和定期恢复演练
+    capability_type: platform
+    platform_area: resilience
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PLATFORM-004
+    - CAP-PLATFORM-007

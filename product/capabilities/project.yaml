@@ -1,0 +1,119 @@
+version: 1
+group:
+  id: CAP-GROUP-PROJECT
+  name: 修谱项目与协作交付
+  capabilities:
+  - id: CAP-PROJECT-001
+    name: 修谱项目创建
+    description: 创建项目并定义基本目标、范围和负责人
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-PROJECT-002
+    name: 阶段、里程碑与范围管理
+    description: 管理项目阶段、里程碑、修谱范围和完成标准
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PROJECT-001
+  - id: CAP-PROJECT-003
+    name: 支房户任务分配
+    description: 按谱系范围将采集、校对和审核任务分配给责任人
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains:
+    - lineage-organization
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PROJECT-002
+    - CAP-LINEAGE-001
+  - id: CAP-PROJECT-004
+    name: 进度、问题与阻塞管理
+    description: 统计采集和审核进度并管理问题、逾期和阻塞
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PROJECT-003
+  - id: CAP-PROJECT-005
+    name: 通知与待办
+    description: 对提交、驳回、待审核、逾期和交付节点发送通知
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PROJECT-003
+  - id: CAP-PROJECT-006
+    name: 项目模板与复用
+    description: 复用组织、流程、表单、规则和出版配置
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.2
+    release_priority: should
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-PROJECT-002
+  - id: CAP-PROJECT-007
+    name: 项目交付与归档
+    description: 冻结交付范围并归档数据、谱书、报告和审计证据
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains:
+    - publication
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PUBLICATION-008
+    - CAP-PLATFORM-005
+  - id: CAP-PROJECT-008
+    name: 外部服务商协作
+    description: 管理专家、排版、印刷和数据整理服务商的任务、交付物与受控访问
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.2
+    release_priority: should
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ACCESS-006
+    - CAP-PROJECT-006
+  - id: CAP-PROJECT-009
+    name: 机构级进度质量与交付看板
+    description: 跨客户项目汇总进度、质量、风险、资源和交付状态
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.2
+    release_priority: should
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ORG-005
+    - CAP-PROJECT-004
+    - CAP-COLLECT-008

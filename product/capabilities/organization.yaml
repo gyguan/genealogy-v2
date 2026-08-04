@@ -1,0 +1,65 @@
+version: 1
+group:
+  id: CAP-GROUP-ORG
+  name: 宗族、机构与组织
+  capabilities:
+  - id: CAP-ORG-001
+    name: 宗族与机构工作空间
+    description: 为单一宗族或专业修谱机构建立隔离的工作空间
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-ORG-002
+    name: 姓氏、堂号与修谱范围
+    description: 定义本次修谱覆盖的姓氏、堂号、地域和谱系范围
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-ORG-001
+  - id: CAP-ORG-003
+    name: 修谱委员会与组织岗位
+    description: 管理主编、总纂、支房负责人、采集员和审核员等岗位
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-ORG-001
+  - id: CAP-ORG-004
+    name: 成员、角色与职责分配
+    description: 将成员分配到组织岗位、项目范围和数据责任范围
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-ORG-003
+  - id: CAP-ORG-005
+    name: 专业机构多项目运营
+    description: 支持专业修谱机构统一管理多个客户和修谱项目
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.2
+    release_priority: should
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ORG-001
+    - CAP-PROJECT-006

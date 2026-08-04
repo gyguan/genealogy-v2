@@ -1,0 +1,82 @@
+version: 1
+group:
+  id: CAP-GROUP-HISTORY
+  name: 历史日期、地点与事件
+  capabilities:
+  - id: CAP-HISTORY-001
+    name: 模糊与区间日期
+    description: 支持约、前、后、区间和仅年份等非精确日期
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-HISTORY-002
+    name: 公历、农历与历史纪年
+    description: 保存原始纪年表达并提供规范化换算和不确定性说明
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-HISTORY-001
+  - id: CAP-HISTORY-003
+    name: 历史地点与现代映射
+    description: 管理历史行政区、地点别名和现代地理位置映射
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-HISTORY-004
+    name: 人物生命事件
+    description: 管理出生、婚姻、死亡、任职、功名和重要经历
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+    - CAP-HISTORY-001
+    - CAP-HISTORY-003
+  - id: CAP-HISTORY-005
+    name: 迁徙事件与路线
+    description: 记录人物或谱系组织的迁出、迁入和迁徙路线
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains:
+    - person-registry
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-HISTORY-003
+    - CAP-PERSON-001
+  - id: CAP-HISTORY-006
+    name: 祠堂、墓葬与文化地点
+    description: 维护与人物和谱系相关的祠堂、墓葬、碑刻和文化地点
+    capability_type: business
+    primary_domain: publication
+    supporting_domains:
+    - person-registry
+    - source-and-evidence
+    target_release: V0.5
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-HISTORY-003
+    - CAP-EVIDENCE-001

@@ -1,0 +1,98 @@
+version: 1
+group:
+  id: CAP-GROUP-PERSON
+  name: 人物身份与姓名
+  capabilities:
+  - id: CAP-PERSON-001
+    name: 人物稳定身份
+    description: 为自然人建立不随姓名、家庭角色和谱系归属变化的稳定身份
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains: []
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-PERSON-002
+    name: 多姓名管理
+    description: 支持本名、谱名、字、号、乳名和曾用名及其使用范围
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains: []
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+  - id: CAP-PERSON-003
+    name: 基础生平信息
+    description: 维护性别、生卒、排行、简介和基础人物属性
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+    - CAP-EVIDENCE-010
+  - id: CAP-PERSON-004
+    name: 人物历史日期与地点
+    description: 关联模糊日期、历史纪年、历史地点和现代地点映射
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-003
+    - CAP-HISTORY-001
+    - CAP-HISTORY-003
+  - id: CAP-PERSON-005
+    name: 人物合并与拆分
+    description: 处理重复人物、错误合并和身份冲突并保留历史
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+    - CAP-EVIDENCE-007
+  - id: CAP-PERSON-006
+    name: 人物修订与版本历史
+    description: 记录人物字段的修改、审核、回退和版本差异
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+    - CAP-EVIDENCE-009
+  - id: CAP-PERSON-007
+    name: 在世人物基础隐私标记
+    description: 标记在世、未成年人和敏感字段，并提供默认最小披露规则
+    capability_type: business
+    primary_domain: person-registry
+    supporting_domains:
+    - genealogy-project
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+    - CAP-ACCESS-003

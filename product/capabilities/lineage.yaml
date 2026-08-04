@@ -1,0 +1,100 @@
+version: 1
+group:
+  id: CAP-GROUP-LINEAGE
+  name: 谱系组织与字辈世次
+  capabilities:
+  - id: CAP-LINEAGE-001
+    name: 宗派支房户组织树
+    description: 建立宗、派、支、房、户等可配置谱系组织层级
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains: []
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-LINEAGE-002
+    name: 始祖、始迁祖与开基祖
+    description: 标记不同范围的祖先角色及其适用谱系节点
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains:
+    - person-registry
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-LINEAGE-001
+    - CAP-PERSON-001
+  - id: CAP-LINEAGE-003
+    name: 人物谱系归属
+    description: 将人物身份与特定谱系节点和归属时期建立关联
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains:
+    - person-registry
+    - source-and-evidence
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-LINEAGE-001
+    - CAP-PERSON-001
+    - CAP-EVIDENCE-010
+  - id: CAP-LINEAGE-004
+    name: 字辈与世次规则
+    description: 管理字辈谱、世次计算和不同支系的排行规则
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains:
+    - family-and-kinship
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-LINEAGE-001
+    - CAP-KINSHIP-002
+  - id: CAP-LINEAGE-005
+    name: 分支、迁移与合并历史
+    description: 记录支房形成、迁移、分立和组织调整过程
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-LINEAGE-001
+    - CAP-HISTORY-005
+  - id: CAP-LINEAGE-006
+    name: 祖籍、郡望与地域范围
+    description: 管理谱系组织关联的祖籍、郡望、聚居地和地域变化
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains:
+    - person-registry
+    target_release: V0.3
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-HISTORY-003
+  - id: CAP-LINEAGE-007
+    name: 支房负责人
+    description: 为谱系节点维护当前项目中的资料和审核责任人
+    capability_type: business
+    primary_domain: lineage-organization
+    supporting_domains:
+    - genealogy-project
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-LINEAGE-001
+    - CAP-ORG-004

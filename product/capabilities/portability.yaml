@@ -1,0 +1,90 @@
+version: 1
+group:
+  id: CAP-GROUP-PORTABILITY
+  name: 分阶段数据可迁移
+  capabilities:
+  - id: CAP-PORT-001
+    name: 基础人物关系与谱系导出
+    description: 从V0.1起以可读结构化格式导出人物、家庭关系、谱系组织和基础来源引用
+    capability_type: platform
+    platform_area: data-portability
+    primary_domain: genealogy-project
+    supporting_domains:
+    - person-registry
+    - family-and-kinship
+    - lineage-organization
+    - source-and-evidence
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+    - CAP-KINSHIP-002
+    - CAP-LINEAGE-001
+    - CAP-EVIDENCE-010
+  - id: CAP-PORT-002
+    name: 采集模板与审核记录导出
+    description: 导出采集模板、任务、提交、驳回和审核记录，支持项目过程交接
+    capability_type: platform
+    platform_area: data-portability
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PORT-001
+    - CAP-COLLECT-006
+    - CAP-EVIDENCE-011
+  - id: CAP-PORT-003
+    name: 复杂谱系与历史语义导出
+    description: 完整表达继嗣、兼祧、字辈、世次、历史日期、地点和迁徙语义
+    capability_type: platform
+    platform_area: data-portability
+    primary_domain: genealogy-project
+    supporting_domains:
+    - family-and-kinship
+    - lineage-organization
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PORT-002
+    - CAP-KINSHIP-006
+    - CAP-LINEAGE-004
+    - CAP-HISTORY-005
+  - id: CAP-PORT-004
+    name: 来源主张证据链导出
+    description: 导出来源、引文、主张、证据、审核结论和全链路溯源信息
+    capability_type: platform
+    platform_area: data-portability
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PORT-003
+    - CAP-EVIDENCE-009
+  - id: CAP-PORT-005
+    name: 出版快照与规则交付包
+    description: 导出不可变出版快照、编排规则、生成物和复现所需元数据
+    capability_type: platform
+    platform_area: data-portability
+    primary_domain: genealogy-project
+    supporting_domains:
+    - publication
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PORT-004
+    - CAP-PUBLICATION-006
+    - CAP-PUBLICATION-007

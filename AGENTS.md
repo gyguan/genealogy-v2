@@ -6,9 +6,12 @@
 
 1. 根 `AGENTS.md` 与 `SECURITY.md`；
 2. 当前 `changes/<change-id>/change.yaml` 和 `proposal.md`；
-3. `domains/context-map.yaml`、受影响的 `domains/*.md` 与 `domains/glossary.yaml`；
-4. 相关 `decisions/`；
-5. 本次使用的 `skills/<skill>/SKILL.md`。
+3. `product/releases.yaml`、`product/capability-map.yaml` 与本次关联的 `product/capabilities/*.yaml`；
+4. `domains/context-map.yaml`、受影响的 `domains/*.md` 与 `domains/glossary.yaml`；
+5. 相关 `decisions/`；
+6. 本次使用的 `skills/<skill>/SKILL.md`。
+
+除产品规划任务外，不应默认加载全部能力文件；应根据 Change 中的 Capability ID 定位对应能力组，减少无关上下文。
 
 ## 指令优先级
 
@@ -22,11 +25,14 @@
 > 其他参考材料
 ```
 
-用户可以提出修改领域规则、Decision 或治理规则，但不得在同一次实现任务中静默绕过。此类修改必须建立独立 Change，经评审批准后再生效。
+用户可以提出修改产品规则、领域规则、Decision 或治理规则，但不得在同一次实现任务中静默绕过。此类修改必须建立独立 Change，经评审批准后再生效。
 
 ## 权威来源
 
-- `product/capability-map.yaml`：产品能力事实源；
+- `product/releases.yaml`：版本ID、目标、状态、规划深度与置信度事实源；
+- `product/capability-map.yaml`：产品能力文件Manifest与全局规则；
+- `product/capabilities/*.yaml`：产品能力事实源；
+- `product/roadmap.md`：版本用户闭环、边界、验收、成功指标和风险；
 - `domains/glossary.yaml`：统一业务术语事实源；
 - `domains/*.md`：领域职责、非职责与不变量事实源；
 - `domains/context-map.yaml`：领域依赖关系唯一事实源，领域文件不得重复声明依赖；
@@ -34,18 +40,30 @@
 - `decisions/DEC-*.md`：长期有效决策事实源；
 - `skills/`：执行方法，不得覆盖正式产品、领域、Change 或 Decision。
 
+Capability 的 `primary_domain` 只表示产品责任归属，不等同于代码模块归属、编译依赖或直接数据访问权限。
+
 ## Change 要求
 
 非平凡需求必须创建 `changes/CHG-xxxx-name/`，至少包含：
 
 - `change.yaml`：唯一类型、状态、关联资产和 Gate；
 - `proposal.md`：背景、目标、非目标、范围和修改边界；
-- `specs/`：按领域维护的 Spec Delta；
+- `specs/`：按领域或产品范围维护的 Spec Delta；
 - `design.md`：方案、权衡、测试 Seam 和风险；
 - `tasks.md`：纵向任务、测试和完成定义；
 - `evidence/`：验证、评审和测试证据。
 
 GitHub Issue 是执行视图，批准后的 Change Spec 才是需求事实源。Change 状态必须与 Gate、Task 和 Evidence 一致，并通过 `tools/validate_repo.py` 校验。
+
+## 产品规划纪律
+
+- 版本顺序与状态只在 `product/releases.yaml` 维护；
+- Capability按能力组维护，不在Roadmap重复全部特性；
+- `release_priority`只表示目标版本内的must、should或could；
+- candidate能力不构成交付承诺；
+- Capability依赖不得形成循环，也不得依赖更晚版本；
+- 每个实施版本都必须具备与范围匹配的来源、审核、授权、查询、迁出和恢复闭环；
+- 版本或Capability调整必须通过产品Change，不得直接修改正式基线。
 
 ## 开发纪律
 
@@ -55,7 +73,7 @@ GitHub Issue 是执行视图，批准后的 Change Spec 才是需求事实源。
 - `to-tickets` 将需求拆成可独立验证的纵向切片。
 - 编码在批准的测试 Seam 上执行 TDD。
 - 完成后执行 Standards 与 Spec 双轴评审。
-- 合入前运行 `python tools/validate_repo.py`。
+- 合入前运行 `python tools/validate_repo.py` 和仓库回归测试。
 
 ## 全局红线
 

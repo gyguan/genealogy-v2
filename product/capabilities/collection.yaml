@@ -1,0 +1,110 @@
+version: 1
+group:
+  id: CAP-GROUP-COLLECTION
+  name: 资料采集与协同审核
+  capabilities:
+  - id: CAP-COLLECT-001
+    name: 采集表单模板
+    description: 按项目和资料类型配置人物、家庭和来源采集表单
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PROJECT-001
+  - id: CAP-COLLECT-002
+    name: 按支房户采集
+    description: 按谱系任务范围组织人物、家庭和资料采集
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PROJECT-003
+    - CAP-COLLECT-001
+  - id: CAP-COLLECT-003
+    name: 在线填报与暂存
+    description: 支持采集人员在线录入、暂存、补充和提交
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-COLLECT-002
+  - id: CAP-COLLECT-004
+    name: Excel采集导入导出
+    description: 提供模板下载、离线填报、预检查和批量导入
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-COLLECT-001
+  - id: CAP-COLLECT-005
+    name: 草稿、提交与撤回
+    description: 管理采集数据从草稿到提交和允许范围内撤回的状态
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-COLLECT-003
+  - id: CAP-COLLECT-006
+    name: 多级审核与驳回补充
+    description: 支持房支审核、项目审核以及驳回、补充和重新提交
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-COLLECT-005
+    - CAP-ORG-004
+  - id: CAP-COLLECT-007
+    name: 数据冲突检测
+    description: 识别重复人物、关系矛盾、世次异常和字段冲突
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains:
+    - person-registry
+    - family-and-kinship
+    - lineage-organization
+    - source-and-evidence
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-005
+    - CAP-KINSHIP-009
+  - id: CAP-COLLECT-008
+    name: 数据质量报告
+    description: 按项目、支房和问题类型生成完整性与质量报告
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-COLLECT-007
+    - CAP-EVIDENCE-006

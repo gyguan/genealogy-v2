@@ -1,0 +1,90 @@
+version: 1
+group:
+  id: CAP-GROUP-ACCESS
+  name: 账号、访问与隐私
+  capabilities:
+  - id: CAP-ACCESS-001
+    name: 账号与身份认证
+    description: 支持用户账号、登录认证、停用和访问回收，为项目协作建立可追踪身份
+    capability_type: platform
+    platform_area: identity-access
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-ACCESS-002
+    name: 成员邀请与账号绑定
+    description: 将受邀账号绑定到宗族、机构、项目成员和组织岗位，并保留加入与退出历史
+    capability_type: platform
+    platform_area: identity-access
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-ACCESS-001
+    - CAP-ORG-004
+  - id: CAP-ACCESS-003
+    name: 基础项目角色与支房数据范围
+    description: 在采集审核阶段按项目角色、任务和支房范围控制查看、编辑、提交与审核
+    capability_type: platform
+    platform_area: authorization
+    primary_domain: genealogy-project
+    supporting_domains:
+    - lineage-organization
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-ACCESS-002
+    - CAP-LINEAGE-007
+  - id: CAP-ACCESS-004
+    name: 隐私授权、同意与保留
+    description: 记录在世人物和敏感资料的授权依据、使用目的、保留期限和撤回状态
+    capability_type: platform
+    platform_area: privacy-authorization
+    primary_domain: genealogy-project
+    supporting_domains:
+    - person-registry
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-ACCESS-003
+    - CAP-PERSON-007
+  - id: CAP-ACCESS-005
+    name: 数据更正、撤回与删除请求
+    description: 受理并审计个人或授权代表提出的数据更正、撤回、限制使用和删除请求
+    capability_type: platform
+    platform_area: privacy-operations
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V1.0
+    release_priority: should
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-ACCESS-004
+    - CAP-EVIDENCE-009
+  - id: CAP-ACCESS-006
+    name: 外部协作者受控访问
+    description: 允许专家、排版服务商和其他外部协作者在限定项目、期限和数据范围内工作
+    capability_type: platform
+    platform_area: federated-access
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.2
+    release_priority: should
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-PLATFORM-001
+    - CAP-ORG-005

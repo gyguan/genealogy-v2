@@ -1,0 +1,120 @@
+version: 1
+group:
+  id: CAP-GROUP-QUERY
+  name: 查询、世系图与阅读
+  capabilities:
+  - id: CAP-QUERY-001
+    name: 人物与谱系搜索
+    description: 按姓名、别名、支房、地点和其他授权字段搜索
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - person-registry
+    - lineage-organization
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+    - CAP-LINEAGE-001
+  - id: CAP-QUERY-002
+    name: 人物详情阅读
+    description: 聚合人物姓名、生平、关系、谱系、事件和来源摘要
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - person-registry
+    - family-and-kinship
+    - lineage-organization
+    - source-and-evidence
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-003
+    - CAP-KINSHIP-001
+    - CAP-LINEAGE-003
+  - id: CAP-QUERY-003
+    name: 祖先上溯与后裔下查
+    description: 按代数查询祖先链和后裔树并处理合法关系类型
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - family-and-kinship
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-002
+  - id: CAP-QUERY-004
+    name: 多代世系图
+    description: 生成可展开、可定位和可打印的多代世系视图
+    capability_type: application
+    primary_domain: publication
+    supporting_domains: []
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-QUERY-003
+  - id: CAP-QUERY-005
+    name: 亲属关系路径
+    description: 基于多维关系计算并解释两个人之间的关系路径
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - family-and-kinship
+    target_release: V0.3
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-003
+    - CAP-KINSHIP-005
+  - id: CAP-QUERY-006
+    name: 字辈与世次查询
+    description: 按谱系节点查询字辈、排行和世次异常
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - lineage-organization
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-LINEAGE-004
+  - id: CAP-QUERY-007
+    name: 迁徙地图与人物时间线
+    description: 展示谱系迁徙、人物事件和历史地点变化
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - person-registry
+    - lineage-organization
+    target_release: V0.5
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-HISTORY-004
+    - CAP-HISTORY-005
+  - id: CAP-QUERY-008
+    name: 基础授权阅读与隐私视图
+    description: 根据身份、用途和出版范围生成不同的阅读内容
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - person-registry
+    - genealogy-project
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-007
+    - CAP-ACCESS-003

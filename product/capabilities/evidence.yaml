@@ -1,0 +1,137 @@
+version: 1
+group:
+  id: CAP-GROUP-EVIDENCE
+  name: 来源、主张、证据与质量
+  capabilities:
+  - id: CAP-EVIDENCE-010
+    name: 基础来源引用与事实审核状态
+    description: 从首个版本起为关键人物、关系和谱系归属保存来源引用，并区分草稿、待审核和正式状态
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-001
+  - id: CAP-EVIDENCE-011
+    name: 变更与审核操作记录
+    description: 记录提交、审核、驳回、撤回和正式生效过程，为后续完整审计提供连续历史
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-010
+  - id: CAP-EVIDENCE-001
+    name: 来源登记
+    description: 登记人物、关系和谱系事实所依据的口述、旧谱、文件或其他基础来源
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on: []
+  - id: CAP-EVIDENCE-002
+    name: 引文与定位
+    description: 从来源中记录页码、区域、原文和可复核定位信息
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.2
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-001
+  - id: CAP-EVIDENCE-003
+    name: 事实主张
+    description: 将尚待确认的人物、关系、日期和地点陈述建模为主张
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-002
+  - id: CAP-EVIDENCE-004
+    name: 证据关联
+    description: 建立证据对主张的支持、反驳和不确定关联
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-003
+  - id: CAP-EVIDENCE-005
+    name: 矛盾主张与争议处理
+    description: 并存展示相互冲突的主张、证据和处理状态
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-004
+  - id: CAP-EVIDENCE-006
+    name: 可信度与质量等级
+    description: 按来源类型、证据充分性和审核结果评估质量
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.4
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-004
+  - id: CAP-EVIDENCE-007
+    name: 审核形成正式事实
+    description: 经过授权审核后将主张确认为正式事实或驳回
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-003
+    - CAP-EVIDENCE-004
+  - id: CAP-EVIDENCE-008
+    name: 来源权利与使用许可
+    description: 记录来源版权、授权范围和出版使用限制
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-EVIDENCE-001
+  - id: CAP-EVIDENCE-009
+    name: 全链路溯源
+    description: 从正式事实追溯到审核、主张、证据、引文和来源
+    capability_type: business
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-007

@@ -1,0 +1,64 @@
+version: 1
+status: approved
+updated_at: '2026-08-04'
+releases:
+- id: V0.1
+  name: 基础谱系纵向验证版
+  status: planned
+  planning_confidence: high
+  planning_depth: detailed
+  goal: 以虚构数据完成项目、人物、家庭单元、普通关系、基础来源审核、世系查询和结构化导出的最小闭环
+- id: V0.2
+  name: 资料采集与基础治理版
+  status: planned
+  planning_confidence: high
+  planning_depth: detailed
+  goal: 支持账号、角色、支房任务范围、在线与Excel采集、多级审核、操作记录、备份和过程数据导出
+- id: V0.3
+  name: 中国式复杂谱系版
+  status: planned
+  planning_confidence: high
+  planning_depth: detailed
+  goal: 正确表达复杂亲属、谱籍承继、字辈、世次和历史时空语义，并保持可查询和可迁出
+- id: V0.4
+  name: 证据与质量治理版
+  status: planned
+  planning_confidence: high
+  planning_depth: bounded
+  goal: 建立完整来源、主张、证据、冲突治理、正式事实、数字资产和质量报告闭环
+- id: V0.5
+  name: 谱书编修与出版版
+  status: planned
+  planning_confidence: high
+  planning_depth: bounded
+  goal: 从审核后的结构化事实形成带基础隐私控制、可复现快照和可交付数据包的谱书
+- id: V1.0
+  name: 商用加固与真实项目交付版
+  status: planned
+  planning_confidence: medium
+  planning_depth: outcome-only
+  goal: 在既有纵向闭环上完成细粒度权限、隐私运营、安全审计、灾难恢复、私有化部署和真实项目验收
+- id: V1.1
+  name: 旧谱智能数字化版
+  status: candidate
+  planning_confidence: low
+  planning_depth: outcome-only
+  goal: 支持扫描旧谱的OCR、版面分析、结构候选、人工校对和受控导入
+- id: V1.2
+  name: 专业机构运营版
+  status: candidate
+  planning_confidence: low
+  planning_depth: outcome-only
+  goal: 支持专业修谱机构多客户、多项目、外部服务商、模板复用和机构级经营交付
+- id: V2.0
+  name: 平台与生态候选版
+  status: candidate
+  planning_confidence: low
+  planning_depth: candidate-only
+  goal: 在授权、隐私、证据和审计边界下探索跨谱协作、专家生态、移动采集和受控AI辅助
+rules:
+- release ids are stable and ordered by this file
+- planned releases express an approved delivery direction; candidate releases are not commitments
+- planning_depth uses detailed, bounded, outcome-only or candidate-only
+- capabilities may not depend on a capability targeted for a later release
+- release changes must be introduced through an approved product Change
