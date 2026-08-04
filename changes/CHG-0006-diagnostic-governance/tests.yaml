@@ -1,0 +1,17 @@
+version: 1
+tests:
+  - id: TEST-GOV-DIAGNOSTICS-001
+    kind: unit
+    command: python -m unittest tools.tests.test_validate_change_quality
+    specs:
+      - SPEC-GOV-007
+  - id: TEST-GOV-QUALITY-001
+    kind: regression
+    command: python -m unittest tools.tests.test_validate_change_quality
+    specs:
+      - SPEC-GOV-008
+  - id: TEST-GOV-PR-SCOPE-001
+    kind: unit
+    command: python -m unittest tools.tests.test_validate_pr_change
+    specs:
+      - SPEC-GOV-009
