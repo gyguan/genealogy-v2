@@ -2,7 +2,7 @@ version: 1
 id: CHG-0001
 title: close-directory-review-findings
 change_type: governance
-status: implementing
+status: completed
 
 issue:
   repository: gyguan/genealogy-v2
@@ -31,9 +31,9 @@ gates:
     approved_at: 2026-08-04T09:40:00+08:00
     evidence: evidence/implementation-approval.md
   release_approval:
-    status: pending
-    approved_by: null
-    approved_at: null
-    evidence: null
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T10:00:00+08:00
+    evidence: evidence/release-approval.md
 
 cancellation_reason: null
