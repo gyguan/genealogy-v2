@@ -86,10 +86,26 @@ def validate_required_sections(
     for title in required:
         if title not in sections:
             reporter.error("CHG-DOC-002", f"missing section ## {title}", rel(path))
-        elif not meaningful(sections[title]):
-            reporter.error("CHG-DOC-003", f"section ## {title} has no meaningful content", rel(path))
-        elif strict and PLACEHOLDER_PATTERN.search(sections[title]):
-            reporter.error("CHG-DOC-004", f"section ## {title} contains placeholder content", rel(path))
+            continue
+        if not meaningful(sections[title]):
+            if strict:
+                reporter.error("CHG-DOC-003", f"section ## {title} has no meaningful content", rel(path))
+            else:
+                reporter.warning(
+                    "CHG-MIGRATION-002",
+                    f"legacy section ## {title} has no meaningful content",
+                    rel(path),
+                )
+            continue
+        if PLACEHOLDER_PATTERN.search(sections[title]):
+            if strict:
+                reporter.error("CHG-DOC-004", f"section ## {title} contains placeholder content", rel(path))
+            else:
+                reporter.warning(
+                    "CHG-MIGRATION-003",
+                    f"legacy section ## {title} contains placeholder content",
+                    rel(path),
+                )
 
 
 def split_blocks(pattern: re.Pattern[str], text: str) -> list[tuple[re.Match[str], str]]:
@@ -347,9 +363,16 @@ def validate_change(change_dir: Path, reporter: Reporter) -> None:
     specs_dir = change_dir / "specs"
     for path in sorted(specs_dir.glob("*.md")) if specs_dir.exists() else []:
         found_specs, found_scenarios = parse_specs(path, reporter, strict)
-        duplicates = spec_ids & found_specs
-        for spec_id in sorted(duplicates):
+        duplicate_specs = spec_ids & found_specs
+        for spec_id in sorted(duplicate_specs):
             reporter.error("SPEC-ID-003", f"duplicate Spec id across files: {spec_id}", rel(change_dir))
+        duplicate_scenarios = scenario_ids & found_scenarios
+        for scenario_id in sorted(duplicate_scenarios):
+            reporter.error(
+                "SPEC-SCENARIO-004",
+                f"duplicate Scenario id across files: {scenario_id}",
+                rel(change_dir),
+            )
         spec_ids.update(found_specs)
         scenario_ids.update(found_scenarios)
     validate_traceability(change_dir, reporter, strict, spec_ids, scenario_ids)
