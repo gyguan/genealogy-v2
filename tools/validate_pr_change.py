@@ -51,6 +51,19 @@ def extract_change_ids(body: str) -> set[str]:
     return result
 
 
+def changed_file_paths(files: list[dict]) -> list[str]:
+    paths: list[str] = []
+    for item in files:
+        filename = item.get("filename")
+        if isinstance(filename, str):
+            paths.append(filename)
+        if item.get("status") == "renamed":
+            previous = item.get("previous_filename")
+            if isinstance(previous, str):
+                paths.append(previous)
+    return list(dict.fromkeys(paths))
+
+
 def resolve_change(root: Path, change_id: str) -> Path | None:
     matches = sorted((root / "changes").glob(f"{change_id}-*"))
     return matches[0] if len(matches) == 1 else None
@@ -187,8 +200,12 @@ def main() -> int:
         number = int(number_text)
         pull_request = api(f"https://api.github.com/repos/{repo}/pulls/{number}", token)
         files = rest_pages(f"https://api.github.com/repos/{repo}/pulls/{number}/files", token)
-        changed_files = [value["filename"] for value in files if isinstance(value.get("filename"), str)]
-        metadata = validate_declared_scope(ROOT, pull_request.get("body") or "", changed_files, reporter)
+        metadata = validate_declared_scope(
+            ROOT,
+            pull_request.get("body") or "",
+            changed_file_paths(files),
+            reporter,
+        )
         validate_issues(repo, token, metadata, reporter)
     except (OSError, ValueError, TypeError, KeyError, yaml.YAMLError, urllib.error.URLError) as exc:
         reporter.error("PR-EXEC-001", f"PR Change validation failed to execute: {exc}")
