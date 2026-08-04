@@ -79,6 +79,41 @@ class FinalDesignReviewGapTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("required facet security_privacy needs stable ID", result.stdout)
 
+    def test_required_security_needs_traceable_definition_row(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.md"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("SEC-GOV-DESIGN-001", "SAFETY-GOV-DESIGN-001")
+        text = text.replace("SEC-GOV-DESIGN-002", "SAFETY-GOV-DESIGN-002")
+        text = text.replace(
+            "## 安全与隐私\n",
+            "## 安全与隐私\n\nSEC-GOV-PROSE-001 描述安全风险，但没有 Test 追踪。\n",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+
+        result = run(root, "tools/validate_design.py")
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn(
+            "required facet security_privacy needs a canonical SEC definition row",
+            result.stdout,
+        )
+
+    def test_quoted_angle_in_html_attribute_is_masked(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.md"
+        text = path.read_text(encoding="utf-8").replace(
+            "## 方案概览\n",
+            "## 方案概览\n\n<widget data-label=\">\">\n## 伪造章节\nSEC-GOV-HTML-EXAMPLE-001\n\n",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+
+        result = run(root, "tools/validate_design.py")
+
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
