@@ -17,8 +17,9 @@ RELEASE_PRIORITIES = {"must", "should", "could"}
 PLANNING_CONFIDENCE = {"high", "medium", "low"}
 ROADMAP_REQUIRED = ("用户目标", "纵向闭环", "主要能力", "明确不包含", "版本验收", "成功指标", "核心风险")
 PLACEHOLDERS = {"待补充", "待完善", "tbd", "todo", "n/a", "na", "无"}
-IMPLEMENTATION_RELEASES = ("V0.1", "V0.2", "V0.3", "V0.4", "V0.5")
 BASE_CLOSURE_ROLES = {"source", "review", "readback", "portability", "recovery"}
+GOVERNED_RELEASE_STATES = {"planned", "in-progress", "delivered"}
+GOVERNED_PLANNING_DEPTHS = {"detailed", "bounded"}
 
 
 def fail(message: str) -> None:
@@ -47,7 +48,7 @@ def domain_ids() -> set[str]:
     }
 
 
-def validate_releases() -> tuple[dict[str, dict], dict[str, int]]:
+def validate_releases() -> tuple[dict[str, dict], dict[str, int], list[str]]:
     path = ROOT / "product/releases.yaml"
     data = load_yaml(path) or {}
     items = data.get("releases", []) if isinstance(data, dict) else []
@@ -55,7 +56,7 @@ def validate_releases() -> tuple[dict[str, dict], dict[str, int]]:
     order: dict[str, int] = {}
     if not isinstance(items, list) or not items:
         fail("product/releases.yaml: releases must be a non-empty list")
-        return records, order
+        return records, order, []
 
     for position, item in enumerate(items):
         release_id = item.get("id") if isinstance(item, dict) else None
@@ -84,22 +85,29 @@ def validate_releases() -> tuple[dict[str, dict], dict[str, int]]:
             if item.get("planning_depth") not in {"outcome-only", "candidate-only"}:
                 fail(f"product/releases.yaml: candidate {release_id} has excessive planning depth")
 
-        if release_id in IMPLEMENTATION_RELEASES:
-            closure = item.get("closure")
-            required_roles = set(BASE_CLOSURE_ROLES)
-            if release_id != "V0.1":
-                required_roles.add("authorization")
-            if not isinstance(closure, dict):
-                fail(f"product/releases.yaml: {release_id} needs closure mapping")
-            else:
-                missing = sorted(required_roles - set(closure))
-                if missing:
-                    fail(f"product/releases.yaml: {release_id} closure missing {', '.join(missing)}")
-                for role, capability_id in closure.items():
-                    if not isinstance(role, str) or not isinstance(capability_id, str) or not capability_id:
-                        fail(f"product/releases.yaml: {release_id} has invalid closure entry {role}")
+    governed_releases = [
+        release_id
+        for release_id, item in sorted(records.items(), key=lambda pair: order[pair[0]])
+        if item.get("status") in GOVERNED_RELEASE_STATES
+        and item.get("planning_depth") in GOVERNED_PLANNING_DEPTHS
+    ]
+    first_governed = governed_releases[0] if governed_releases else None
+    for release_id in governed_releases:
+        closure = records[release_id].get("closure")
+        required_roles = set(BASE_CLOSURE_ROLES)
+        if release_id != first_governed:
+            required_roles.add("authorization")
+        if not isinstance(closure, dict):
+            fail(f"product/releases.yaml: {release_id} needs closure mapping")
+            continue
+        missing = sorted(required_roles - set(closure))
+        if missing:
+            fail(f"product/releases.yaml: {release_id} closure missing {', '.join(missing)}")
+        for role, capability_id in closure.items():
+            if not isinstance(role, str) or not isinstance(capability_id, str) or not capability_id:
+                fail(f"product/releases.yaml: {release_id} has invalid closure entry {role}")
 
-    return records, order
+    return records, order, governed_releases
 
 
 def roadmap_sections(block: str) -> dict[str, str]:
@@ -120,7 +128,7 @@ def meaningful(text: str) -> bool:
     return bool(normalized) and normalized not in PLACEHOLDERS
 
 
-def validate_roadmap(release_data: dict[str, dict]) -> None:
+def validate_roadmap(release_data: dict[str, dict], governed_releases: list[str]) -> None:
     path = ROOT / "product/roadmap.md"
     if not path.exists():
         fail("missing required product file: product/roadmap.md")
@@ -144,7 +152,7 @@ def validate_roadmap(release_data: dict[str, dict]) -> None:
         if release_id not in release_data:
             fail(f"product/roadmap.md: unknown release {release_id}")
 
-    for release_id in IMPLEMENTATION_RELEASES:
+    for release_id in governed_releases:
         block = blocks.get(release_id)
         if block is None:
             continue
@@ -380,8 +388,8 @@ def main() -> int:
             fail(f"missing required product file: {name}")
 
     domains = domain_ids()
-    release_data, release_order = validate_releases()
-    validate_roadmap(release_data)
+    release_data, release_order, governed_releases = validate_releases()
+    validate_roadmap(release_data, governed_releases)
     records = validate_capabilities(domains, release_data, release_order)
     validate_closure(release_data, release_order, records)
 
