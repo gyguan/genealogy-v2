@@ -24,11 +24,12 @@
 ## 产品规划纪律
 - Release 事实源为 `product/releases.yaml`；Capability 唯一事实源为分组文件；
 - Capability 责任不等同代码归属；依赖不得循环或版本倒挂；
-- V0.1 必须形成来源、审核、查询、迁出与最小恢复闭环；V0.2 起还必须包含身份与授权；
+- 处于 `detailed` 或 `bounded` 规划深度的实施版本必须声明来源、审核、查询、迁出与恢复闭环；首个实施版本之后还必须声明授权闭环；
 - 版本与 Capability 调整必须通过产品 Change。
 
 ## 评审与合入
 - 当前 Head SHA 必须获得独立 Review；新提交后旧 Review 失效；
+- 触发 Codex 时使用精确命令 `@codex review <40位Head SHA>`；若 Codex 仅以 👍 表示无意见，该反应必须发生在这条服务器记录的 Head 绑定命令之后；
 - 所有有效 Review Thread 必须解决或明确接受；
 - Gate 记录来源、引用、审批人和证据；
 - CI 通过不替代 Standards/Spec 双轴评审；
