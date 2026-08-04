@@ -7,7 +7,12 @@ from validation_test_utils import ROOT
 
 sys.path.insert(0, str(ROOT / "tools"))
 from diagnostics import Reporter  # noqa: E402
-from validate_pr_change import extract_change_ids, required_change_types, validate_declared_scope  # noqa: E402
+from validate_pr_change import (  # noqa: E402
+    changed_file_paths,
+    extract_change_ids,
+    required_change_types,
+    validate_declared_scope,
+)
 
 
 class PullRequestChangeValidationTests(unittest.TestCase):
@@ -54,6 +59,24 @@ class PullRequestChangeValidationTests(unittest.TestCase):
             ["changes/CHG-0004-v01-recovery-loop/change.yaml"],
             reporter,
         )
+        self.assertTrue(any(item.code == "PR-SCOPE-001" for item in reporter.errors))
+
+    def test_renamed_file_includes_previous_path(self) -> None:
+        paths = changed_file_paths(
+            [
+                {
+                    "filename": "tools/renamed.py",
+                    "previous_filename": "changes/CHG-0004-v01-recovery-loop/old.py",
+                    "status": "renamed",
+                }
+            ]
+        )
+        self.assertEqual(
+            ["tools/renamed.py", "changes/CHG-0004-v01-recovery-loop/old.py"],
+            paths,
+        )
+        reporter = Reporter()
+        validate_declared_scope(ROOT, "- Change ID：CHG-0006", paths, reporter)
         self.assertTrue(any(item.code == "PR-SCOPE-001" for item in reporter.errors))
 
     def test_path_classification_is_explicit(self) -> None:
