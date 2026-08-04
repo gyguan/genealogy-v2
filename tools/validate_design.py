@@ -82,15 +82,20 @@ _RAW_HTML_UNTIL_CLOSE = {"pre", "script", "style", "textarea"}
 _COMPLETE_HTML_TAG = re.compile(
     r"^</?[A-Za-z][A-Za-z0-9-]*(?:\s+[^<>]*?)?\s*/?>\s*$"
 )
+_RAW_PLACEHOLDER = re.compile(
+    r"(?<![A-Za-z0-9_])(?:TODO|TBD)(?![A-Za-z0-9_])|待确认|待补充",
+    re.I,
+)
 
 
 def _mask_raw_html_blocks(text: str) -> str:
-    """Mask CommonMark raw HTML blocks without inspecting fenced examples."""
+    """Mask CommonMark raw HTML blocks while preserving fenced examples."""
     masked: list[str] = []
     terminator: str | None = None
     until_blank = False
     fence_char: str | None = None
     fence_length = 0
+    list_stack: list[tuple[int, int]] = []
 
     for line in text.splitlines():
         if fence_char is not None:
@@ -124,8 +129,31 @@ def _mask_raw_html_blocks(text: str) -> str:
             masked.append("")
             continue
 
-        match = re.match(r"^ {0,3}(.*)$", line)
-        candidate = match.group(1) if match else ""
+        leading = core.indent_width(line)
+        list_item = re.match(r"^([ \t]*)([-+*]|\d+[.)])([ \t]+)", line)
+        if list_item:
+            item_indent = core.indent_width(list_item.group(1))
+            valid_item = item_indent <= 3 or any(
+                content <= item_indent for _, content in list_stack
+            )
+            if valid_item:
+                while list_stack and item_indent <= list_stack[-1][0]:
+                    list_stack.pop()
+                content_indent = (
+                    item_indent
+                    + len(list_item.group(2))
+                    + max(1, core.indent_width(list_item.group(3)))
+                )
+                list_stack.append((item_indent, content_indent))
+
+        active_content = max(
+            (content for _, content in list_stack if content <= leading),
+            default=None,
+        )
+        html_base_allowed = leading <= 3 or (
+            active_content is not None and leading - active_content <= 3
+        )
+        candidate = line.lstrip(" \t") if html_base_allowed else ""
         lowered = candidate.lower()
 
         if candidate.startswith("<!--"):
@@ -184,7 +212,7 @@ def visible_markdown(text: str) -> str:
 
 
 def validate_original_review_markers(change_dir) -> None:
-    """Reject template comments before structural masking hides them."""
+    """Reject unresolved markers before structural masking hides them."""
     change_path = change_dir / "change.yaml"
     design_path = change_dir / "design.md"
     if not change_path.is_file() or not design_path.is_file():
@@ -201,10 +229,18 @@ def validate_original_review_markers(change_dir) -> None:
         change.get("status") in core.ACTIVE_STATES
         or core.spec_gate_approved(change)
     )
-    if review_ready and "<!--" in body:
+    if not review_ready:
+        return
+    if "<!--" in body:
         core.fail(
             f"{core.rel(design_path)}: review-ready design contains "
             "forbidden HTML comment"
+        )
+    placeholder = _RAW_PLACEHOLDER.search(body)
+    if placeholder:
+        core.fail(
+            f"{core.rel(design_path)}: review-ready design contains "
+            f"placeholder {placeholder.group(0)!r}"
         )
 
 
