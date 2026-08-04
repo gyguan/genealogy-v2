@@ -75,7 +75,7 @@ def write_spec_skeleton(path: Path, change_id: str, scope: str) -> None:
     path.write_text(
         f"# {scope} Spec Delta\n\n"
         "## ADDED\n\n"
-        "### SPEC-REPLACE-ME Observable requirement\n"
+        "## SPEC-REPLACE-ME Observable requirement\n"
         "#### Requirement\n"
         f"<!-- {change_id}: describe one observable requirement. -->\n\n"
         "#### Scenario SCN-REPLACE-ME-01\n"
@@ -103,7 +103,7 @@ def main() -> int:
     if not re.fullmatch(r"CHG-\d{4}", change_id):
         parser.error("Change ID must match CHG-0001")
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name):
-        parser.error("name must be lowercase keb-case")
+        parser.error("name must be lowercase kebab-case")
 
     profile = args.profile or PROFILE_BY_TYPE[args.change_type]
     if args.change_type in {"product", "domain", "security"} and profile != "high-risk":
