@@ -27,6 +27,23 @@ class ChangeQualityValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("CHG-DOC-003", result.stdout)
 
+    def test_legacy_empty_section_is_a_warning(self) -> None:
+        root = copy_repo(self)
+        metadata_path = root / CHANGE / "change.yaml"
+        data = yaml.safe_load(metadata_path.read_text(encoding="utf-8"))
+        data.pop("quality_policy", None)
+        metadata_path.write_text(
+            yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
+            encoding="utf-8",
+        )
+        proposal_path = root / CHANGE / "proposal.md"
+        text = proposal_path.read_text(encoding="utf-8")
+        text = re.sub(r"(## 目标\n).*?(?=\n## )", r"\1", text, count=1, flags=re.S)
+        proposal_path.write_text(text, encoding="utf-8")
+        result = run(root, "tools/validate_change_quality.py")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("CHG-MIGRATION-002", result.stdout)
+
     def test_strict_spec_requires_requirement_content(self) -> None:
         root = copy_repo(self)
         path = root / CHANGE / "specs/repository-governance.md"
@@ -57,6 +74,25 @@ class ChangeQualityValidationTests(unittest.TestCase):
         result = run(root, "tools/validate_change_quality.py")
         self.assertNotEqual(0, result.returncode)
         self.assertIn("SPEC-SCENARIO-001", result.stdout)
+
+    def test_duplicate_scenario_across_spec_files_is_rejected(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "specs/extra.md"
+        path.write_text(
+            "# Extra Spec Delta\n\n"
+            "## ADDED\n\n"
+            "## SPEC-GOV-099 Extra requirement\n"
+            "#### Requirement\n"
+            "Provide an additional observable requirement.\n\n"
+            "#### Scenario SCN-GOV-007-01 Duplicate scenario\n"
+            "- Given: a duplicate identifier\n"
+            "- When: strict validation runs\n"
+            "- Then: validation fails\n",
+            encoding="utf-8",
+        )
+        result = run(root, "tools/validate_change_quality.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("SPEC-SCENARIO-004", result.stdout)
 
     def test_strict_task_test_reference_must_exist(self) -> None:
         root = copy_repo(self)
