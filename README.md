@@ -1,14 +1,14 @@
 # Genealogy V2
 
-面向中国式商用族谱系统的 AI 原生工程仓。产品、领域、变更、Skill、验证和后续代码均以可追踪、可校验的资产驱动。
+面向中国式商用族谱系统的 AI 辅助研发项目。
 
-## AI 标准入口
+## AI 开发入口
 
-1. `AGENTS.md`：全仓不可违反的规则；
-2. `ai/repo-map.yaml`：仓库导航和权威来源；
-3. `changes/active/<change-id>/change.yaml`：当前 Change 唯一状态源；
-4. `changes/active/<change-id>/context.md`：目标、非目标和任务边界；
-5. 受影响领域的 `manifest.yaml`、规则、Decision 和 Eval。
+1. 阅读 `AGENTS.md`；
+2. 阅读当前 `changes/<change-id>/change.yaml` 与 `proposal.md`；
+3. 阅读受影响的 `domains/` 领域资产和相关 `decisions/`；
+4. 按 `skills/` 中的需求开发流程执行；
+5. 合入前运行 `python tools/validate_repo.py`。
 
 ## 需求开发流程
 
@@ -21,24 +21,18 @@ grill-with-docs
 → implement + tdd
 → code-review
 → repository validation
-→ 证据归档
 ```
 
-## 一级目录
+## 核心目录
 
 ```text
-ai/          AI 导航、路由、上下文包和兼容策略
-product/     产品愿景、定位、能力和路线
-domains/     领域语义、边界、不变量和领域 Eval
-changes/     单次变更的 OpenSpec、实现包、评审和证据
-decisions/   长期产品、领域、架构和合规决策
-skills/      可安装的工作流、工程纪律和确定性校验器
-evals/       跨领域、端到端和发布门禁验证
-schemas/     仓库治理资产的机器 Schema
-tools/       创建、校验和归档 Change 的确定性工具
-knowledge/   当前实现的人工知识和自动生成索引
-docs/agents/ 外部 Agent Skill 的兼容阅读层
-reference/   非权威研究、模板和参考材料
+product/     产品定位、能力清单和路线
+domains/     领域术语、边界与不变量
+changes/     单次需求的 OpenSpec、设计、任务和证据
+decisions/   需要长期保留的关键决策
+skills/      AI 需求开发 Skill
+tools/       Change 创建和仓库校验工具
+.github/     PR 模板与自动校验
 ```
 
-仓库规则必须能被自动校验。文档约束不能只依赖 Agent 自觉遵守。
+仅在产生真实需求时增加资产，不为未来可能性预建空目录。

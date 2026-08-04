@@ -1,9 +1,0 @@
-seams: []
-
-# - id: SEAM-001
-#   name: observable-public-behavior
-#   interface: public interface under test
-#   reason: highest stable boundary
-#   test_types: [integration]
-#   related_specs: [SPEC-001]
-#   approval: pending

@@ -1,29 +1,14 @@
 id: CHG-0000
 title: change-name
-lifecycle: draft
-authority: provisional
-status: clarification
+status: draft
 
 issue:
   repository: gyguan/genealogy-v2
   number: null
-branch: null
-base_commit: null
+
 affected_domains: []
 
 gates:
-  proposal_review: pending
-  design_review: pending
+  spec_review: pending
   implementation_approval: blocked
   release_approval: blocked
-
-artifacts:
-  context: context.md
-  proposal: proposal.md
-  specs: specs/
-  design: design.md
-  tasks: tasks.md
-  implementation: implementation/
-  validation: validation/
-  reviews: reviews/
-  evidence: evidence/

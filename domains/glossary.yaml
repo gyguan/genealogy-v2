@@ -1,8 +1,7 @@
-lifecycle: draft
-authority: provisional
+status: draft
 terms: []
 
 rules:
   - one business term has one canonical definition
-  - aliases must reference the canonical term
-  - domain documents reference terms instead of redefining them
+  - aliases reference the canonical term
+  - domain files reference terms instead of redefining them

@@ -1,3 +1,5 @@
 # Decisions
 
-记录难以逆转、没有背景会令人困惑、且源于真实权衡的长期决策。状态：Proposed、Accepted、Rejected、Superseded、Deprecated。单次设计细节留在 Change。
+只记录需要长期解释“为什么这样设计”的重要产品、领域、架构或合规决策。
+
+文件命名：`DEC-xxxx-stable-name.md`。当决策数量明显增长后再按类别拆分目录。

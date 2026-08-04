@@ -1,6 +1,10 @@
 # Repository Tools
 
-- `new_change.py`：从模板创建 Change；
-- `validate_repo.py`：校验权威级别、Change、领域 Manifest、Skill Catalog 和路径一致性。
+- `new_change.py`：从简化模板创建稳定的 Change 目录；
+- `validate_repo.py`：校验必要目录、领域文件、Change 工件和 Skill 可发现性。
 
-工具必须确定、可重复，并在 CI 与本地使用同一入口。
+本地和 CI 使用同一个校验入口：
+
+```bash
+python tools/validate_repo.py
+```

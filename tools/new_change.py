@@ -1,23 +1,42 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, shutil
+
+import re
+import shutil
+import sys
 from pathlib import Path
 
-ROOT=Path(__file__).resolve().parents[1]
-TEMPLATE=ROOT/'changes'/'_template'
+ROOT = Path(__file__).resolve().parents[1]
+TEMPLATE = ROOT / "changes" / "_template"
 
-def main():
-    p=argparse.ArgumentParser()
-    p.add_argument('id', help='CHG-0001')
-    p.add_argument('slug', help='stable-kebab-name')
-    args=p.parse_args()
-    if not args.id.startswith('CHG-') or len(args.id)!=8 or not args.id[4:].isdigit():
-        raise SystemExit('id must match CHG-0001')
-    target=ROOT/'changes'/'active'/f'{args.id}-{args.slug}'
-    if target.exists(): raise SystemExit(f'already exists: {target}')
-    shutil.copytree(TEMPLATE,target)
-    change=target/'change.yaml'
-    text=change.read_text(encoding='utf-8').replace('CHG-0000',args.id).replace('change-name',args.slug)
-    change.write_text(text,encoding='utf-8')
-    print(target.relative_to(ROOT))
-if __name__=='__main__': main()
+
+def main() -> int:
+    if len(sys.argv) != 3:
+        print("Usage: python tools/new_change.py CHG-0001 stable-name")
+        return 2
+
+    change_id = sys.argv[1].upper()
+    name = sys.argv[2].strip().lower()
+    if not re.fullmatch(r"CHG-\d{4}", change_id):
+        print("Change ID must match CHG-0001")
+        return 2
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name):
+        print("Name must be lowercase kebab-case")
+        return 2
+
+    target = ROOT / "changes" / f"{change_id}-{name}"
+    if target.exists():
+        print(f"Target already exists: {target.relative_to(ROOT)}")
+        return 1
+
+    shutil.copytree(TEMPLATE, target)
+    metadata = target / "change.yaml"
+    text = metadata.read_text(encoding="utf-8")
+    text = text.replace("CHG-0000", change_id).replace("change-name", name)
+    metadata.write_text(text, encoding="utf-8")
+    print(f"Created {target.relative_to(ROOT)}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
