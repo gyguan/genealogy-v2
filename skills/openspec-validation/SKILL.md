@@ -1,17 +1,19 @@
 ---
 name: openspec-validation
-description: Validate an OpenSpec Change for completeness, consistency, testability and traceability.
+description: Validate an OpenSpec Change for completeness, consistency, testability, gate readiness and traceability.
 ---
 
 # OpenSpec Validation
 
 Check that:
 
-- goal, non-goals and affected domains are explicit;
+- goal, non-goals, Change type, applicable Capability IDs, affected domains and Decision IDs are explicit and valid;
 - each requirement has a stable ID and observable acceptance scenario;
-- Design addresses domain, data, interface, privacy, failure and migration impact;
-- each Task traces to one or more Spec IDs;
+- each Spec file is named after an affected domain or the approved cross-cutting scope;
+- Design addresses domain, data, module boundary, privacy, failure and migration impact;
+- each Task traces to existing Spec IDs and declares tests and Evidence;
 - tests use a stable public Seam;
-- no unresolved blocking contradiction with canonical domain assets or Decisions remains.
+- Change status is consistent with its Gate approvals;
+- no unresolved blocking contradiction with canonical domain assets or Accepted Decisions remains.
 
-Write findings to the Change evidence directory and block implementation on unresolved critical findings.
+Write findings to the Change evidence directory, run `python tools/validate_repo.py`, and block implementation on unresolved critical findings.

@@ -1,5 +1,52 @@
+version: 1
 status: draft
-terms: []
+
+terms:
+  - id: TERM-PERSON-001
+    term: 自然人
+    definition: 独立于姓名、家庭角色和谱系归属而存在的稳定人物身份。
+    domain: person-registry
+    aliases: [人物]
+  - id: TERM-NAME-001
+    term: 人物姓名
+    definition: 自然人在特定时间、语境或来源中使用的姓名表达，不等同于人物身份。
+    domain: person-registry
+    aliases: [姓名]
+  - id: TERM-KINSHIP-001
+    term: 亲属关系
+    definition: 血缘、婚姻、收养、抚养或谱籍承继等具有明确类型和有效期的关系事实。
+    domain: family-and-kinship
+    aliases: []
+  - id: TERM-LINEAGE-001
+    term: 谱系组织
+    definition: 宗、派、支、房、户等用于组织族谱范围和历史归属的结构，不替代亲属关系。
+    domain: lineage-organization
+    aliases: [支房组织]
+  - id: TERM-ASSERTION-001
+    term: 主张
+    definition: 某个来源对人物、关系或组织事实提出的可审核陈述，尚不必然是正式事实。
+    domain: source-and-evidence
+    aliases: []
+  - id: TERM-EVIDENCE-001
+    term: 证据
+    definition: 用于支持或反驳主张的来源片段、引文、记录或审核材料。
+    domain: source-and-evidence
+    aliases: []
+  - id: TERM-FACT-001
+    term: 正式事实
+    definition: 已经过规定审核并被系统采用，可供业务读取但仍保留来源和变更追踪的事实。
+    domain: source-and-evidence
+    aliases: [生效事实]
+  - id: TERM-PROJECT-001
+    term: 修谱项目
+    definition: 具有届次、范围、参与成员、采集任务、审核流程和交付目标的一次修谱工作。
+    domain: genealogy-project
+    aliases: []
+  - id: TERM-SNAPSHOT-001
+    term: 出版快照
+    definition: 为特定谱书版本冻结的不可变正式数据集合，与实时数据库隔离。
+    domain: publication
+    aliases: []
 
 rules:
   - one business term has one canonical definition

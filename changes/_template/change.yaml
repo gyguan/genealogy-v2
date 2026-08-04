@@ -1,14 +1,32 @@
+version: 1
 id: CHG-0000
 title: change-name
+change_type: product
 status: draft
 
 issue:
   repository: gyguan/genealogy-v2
   number: null
 
+capabilities: []
 affected_domains: []
+affected_decisions: []
 
 gates:
-  spec_review: pending
-  implementation_approval: blocked
-  release_approval: blocked
+  spec_review:
+    status: pending
+    approved_by: null
+    approved_at: null
+    evidence: null
+  implementation_approval:
+    status: blocked
+    approved_by: null
+    approved_at: null
+    evidence: null
+  release_approval:
+    status: blocked
+    approved_by: null
+    approved_at: null
+    evidence: null
+
+cancellation_reason: null

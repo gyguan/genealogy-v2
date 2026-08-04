@@ -1,7 +1,6 @@
 ---
 id: publication
 status: draft
-depends_on: [person-registry, family-and-kinship, lineage-organization, source-and-evidence]
 ---
 
 # 谱书出版

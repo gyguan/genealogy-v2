@@ -24,7 +24,13 @@ def main() -> int:
         print("Name must be lowercase kebab-case")
         return 2
 
-    target = ROOT / "changes" / f"{change_id}-{name}"
+    changes_root = ROOT / "changes"
+    reused = [path for path in changes_root.glob(f"{change_id}-*") if path.is_dir()]
+    if reused:
+        print(f"Change ID already exists: {reused[0].relative_to(ROOT)}")
+        return 1
+
+    target = changes_root / f"{change_id}-{name}"
     if target.exists():
         print(f"Target already exists: {target.relative_to(ROOT)}")
         return 1

@@ -1,7 +1,6 @@
 ---
 id: lineage-organization
 status: draft
-depends_on: [person-registry]
 ---
 
 # 谱系组织

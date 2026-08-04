@@ -1,7 +1,6 @@
 ---
 id: source-and-evidence
 status: draft
-depends_on: [person-registry, family-and-kinship]
 ---
 
 # 来源与证据
