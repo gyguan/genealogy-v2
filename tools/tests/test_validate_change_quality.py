@@ -32,7 +32,7 @@ class ChangeQualityValidationTests(unittest.TestCase):
         path = root / CHANGE / "specs/repository-governance.md"
         text = path.read_text(encoding="utf-8")
         text = re.sub(
-            r"\n#### Scenario SCN-GOV-007-01[\s\S]*?(?=\n### SPEC-|\Z)",
+            r"\n#### Scenario SCN-GOV-007-01[\s\S]*?(?=\n## SPEC-|\Z)",
             "",
             text,
             count=1,
