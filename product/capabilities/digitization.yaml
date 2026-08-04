@@ -1,0 +1,94 @@
+version: 1
+group:
+  id: CAP-GROUP-DIGITIZATION
+  name: 数据导入与旧谱数字化
+  capabilities:
+  - id: CAP-DIGI-001
+    name: 扫描件与数字资产管理
+    description: 管理旧谱扫描件、照片、音视频和关联元数据
+    capability_type: application
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-001
+  - id: CAP-DIGI-002
+    name: OCR文字识别
+    description: 对扫描件执行文字识别并保留版面定位和置信度
+    capability_type: application
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V1.1
+    release_priority: must
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-DIGI-001
+  - id: CAP-DIGI-003
+    name: 版面与谱式分析
+    description: 识别世系表、世系录、序跋和其他版面区域
+    capability_type: application
+    primary_domain: source-and-evidence
+    supporting_domains: []
+    target_release: V1.1
+    release_priority: must
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-DIGI-002
+  - id: CAP-DIGI-004
+    name: 人物与关系候选抽取
+    description: 从识别结果中生成待校对的人物、姓名和关系候选
+    capability_type: application
+    primary_domain: source-and-evidence
+    supporting_domains:
+    - person-registry
+    target_release: V1.1
+    release_priority: must
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-DIGI-003
+    - CAP-PERSON-001
+  - id: CAP-DIGI-005
+    name: 数字化校对工作台
+    description: 对原图、识别文本、结构候选和正式数据进行对照校对
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V1.1
+    release_priority: must
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-DIGI-004
+    - CAP-EVIDENCE-003
+  - id: CAP-DIGI-006
+    name: 导入预检查与回滚
+    description: 在正式导入前预览影响、冲突和质量并支持批次回滚
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-COLLECT-007
+  - id: CAP-DIGI-007
+    name: 标准格式与旧系统迁移
+    description: 支持GEDCOM、结构化文件和旧系统数据的受控迁移
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-DIGI-006
+    - CAP-PLATFORM-005

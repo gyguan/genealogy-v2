@@ -1,0 +1,114 @@
+version: 1
+group:
+  id: CAP-GROUP-PUBLICATION
+  name: 谱书编修与出版
+  capabilities:
+  - id: CAP-PUBLICATION-001
+    name: 谱书项目与目录结构
+    description: 创建谱书版本并编排序跋、凡例、世系、传记和附录
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - genealogy-project
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PROJECT-001
+  - id: CAP-PUBLICATION-002
+    name: 编辑内容与文化资料
+    description: 管理序跋、传记、祠堂、墓志、艺文和图片等内容
+    capability_type: application
+    primary_domain: publication
+    supporting_domains: []
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PUBLICATION-001
+    - CAP-HISTORY-006
+  - id: CAP-PUBLICATION-003
+    name: 世系图与世系录生成
+    description: 从正式事实生成符合出版规则的世系图和世系录
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - source-and-evidence
+    - person-registry
+    - family-and-kinship
+    - lineage-organization
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-QUERY-004
+    - CAP-EVIDENCE-007
+  - id: CAP-PUBLICATION-004
+    name: 编排与显示规则
+    description: 配置版式、姓名显示、关系标记、世次和内容选择规则
+    capability_type: application
+    primary_domain: publication
+    supporting_domains: []
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PUBLICATION-003
+  - id: CAP-PUBLICATION-005
+    name: 基础隐私脱敏与内容排除
+    description: 在出版前按授权规则隐藏、概化或排除敏感信息
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - person-registry
+    - genealogy-project
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-007
+    - CAP-PUBLICATION-004
+    - CAP-ACCESS-003
+  - id: CAP-PUBLICATION-006
+    name: 不可变出版快照
+    description: 冻结数据版本、选择范围、规则和内容形成可复现快照
+    capability_type: application
+    primary_domain: publication
+    supporting_domains: []
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PUBLICATION-004
+  - id: CAP-PUBLICATION-007
+    name: PDF预览与印刷输出
+    description: 生成可评审PDF、印刷文件和版面问题报告
+    capability_type: application
+    primary_domain: publication
+    supporting_domains: []
+    target_release: V0.5
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PUBLICATION-006
+  - id: CAP-PUBLICATION-008
+    name: 版本修订、勘误与交付包
+    description: 管理谱书版本、勘误、再版以及数据和文档交付包
+    capability_type: application
+    primary_domain: publication
+    supporting_domains:
+    - genealogy-project
+    target_release: V1.0
+    release_priority: must
+    status: planned
+    planning_confidence: medium
+    depends_on:
+    - CAP-PUBLICATION-007
+    - CAP-PLATFORM-005

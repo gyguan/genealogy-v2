@@ -1,0 +1,91 @@
+version: 1
+group:
+  id: CAP-GROUP-ECOSYSTEM
+  name: 平台生态候选能力
+  capabilities:
+  - id: CAP-ECOSYSTEM-001
+    name: 跨谱人物候选匹配
+    description: 在明确授权下发现跨谱人物候选，由人工核验后建立可撤销关联，不自动合并身份
+    capability_type: application
+    primary_domain: person-registry
+    supporting_domains:
+    - source-and-evidence
+    - genealogy-project
+    target_release: V2.0
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-PERSON-005
+    - CAP-EVIDENCE-009
+    - CAP-PLATFORM-002
+  - id: CAP-ECOSYSTEM-002
+    name: 跨机构授权协作
+    description: 支持机构间针对限定项目、人物和资料范围进行可审计协作
+    capability_type: platform
+    platform_area: federation
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V2.0
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ACCESS-006
+    - CAP-PLATFORM-008
+    - CAP-PLATFORM-003
+  - id: CAP-ECOSYSTEM-003
+    name: 专家审核与服务生态
+    description: 建立专家资质、任务委托、审核结论和服务交付的受控生态
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains:
+    - source-and-evidence
+    target_release: V2.0
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ECOSYSTEM-002
+    - CAP-EVIDENCE-007
+  - id: CAP-ECOSYSTEM-004
+    name: 公共谱牒资料索引
+    description: 在版权、授权和隐私边界内建立可检索的谱牒资料元数据索引
+    capability_type: application
+    primary_domain: source-and-evidence
+    supporting_domains:
+    - genealogy-project
+    target_release: V2.0
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-EVIDENCE-008
+    - CAP-PLATFORM-002
+  - id: CAP-ECOSYSTEM-005
+    name: 移动端受控采集
+    description: 支持移动设备上的任务领取、现场资料采集、拍照和离线暂存
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains: []
+    target_release: V2.0
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-COLLECT-003
+    - CAP-ACCESS-003
+  - id: CAP-ECOSYSTEM-006
+    name: 族人受控参与
+    description: 允许经过邀请和授权的族人补充资料、提出更正和查看限定内容
+    capability_type: application
+    primary_domain: genealogy-project
+    supporting_domains:
+    - publication
+    target_release: V2.0
+    release_priority: could
+    status: candidate
+    planning_confidence: low
+    depends_on:
+    - CAP-ACCESS-005
+    - CAP-QUERY-008

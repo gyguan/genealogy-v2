@@ -1,0 +1,138 @@
+version: 1
+group:
+  id: CAP-GROUP-KINSHIP
+  name: 家庭与中国式亲属关系
+  capabilities:
+  - id: CAP-KINSHIP-010
+    name: 家庭单元与成员角色
+    description: 管理特定时间范围内的伴侣、父母、子女和其他成员角色，并记录家庭单元的形成、变化与结束
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains:
+    - person-registry
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-PERSON-001
+  - id: CAP-KINSHIP-001
+    name: 配偶关系
+    description: 管理婚姻、婚次、时间范围和关系状态
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-010
+    - CAP-EVIDENCE-010
+  - id: CAP-KINSHIP-002
+    name: 生物亲子关系
+    description: 管理生物父母与子女关系并防止祖先环
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.1
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-010
+    - CAP-EVIDENCE-010
+  - id: CAP-KINSHIP-003
+    name: 收养与抚养关系
+    description: 区分法律收养、实际抚养和生物亲缘关系
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-002
+  - id: CAP-KINSHIP-004
+    name: 继父母与继家庭
+    description: 表达再婚家庭中的继父母、继子女和家庭成员关系
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-001
+    - CAP-KINSHIP-002
+  - id: CAP-KINSHIP-005
+    name: 继嗣与出嗣
+    description: 将谱籍承继关系与生物亲缘、家庭关系分离表达
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains:
+    - lineage-organization
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-002
+    - CAP-LINEAGE-003
+  - id: CAP-KINSHIP-006
+    name: 兼祧关系
+    description: 支持一人承继多个房系并保持各房系语义独立
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-005
+  - id: CAP-KINSHIP-007
+    name: 入赘与从妻居
+    description: 表达婚姻、居住、姓氏和谱籍归属的组合变化
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains:
+    - lineage-organization
+    target_release: V0.3
+    release_priority: should
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-001
+    - CAP-LINEAGE-003
+  - id: CAP-KINSHIP-008
+    name: 多婚次与多家庭单元
+    description: 支持再婚、多配偶历史和多个家庭单元的时序表达
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains: []
+    target_release: V0.3
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-KINSHIP-010
+    - CAP-KINSHIP-001
+  - id: CAP-KINSHIP-009
+    name: 关系争议、更正与撤销
+    description: 对存在争议或录入错误的关系进行审核、修订和撤销
+    capability_type: business
+    primary_domain: family-and-kinship
+    supporting_domains:
+    - source-and-evidence
+    target_release: V0.4
+    release_priority: must
+    status: planned
+    planning_confidence: high
+    depends_on:
+    - CAP-EVIDENCE-005
+    - CAP-EVIDENCE-007
