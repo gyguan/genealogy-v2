@@ -1,0 +1,33 @@
+name: PR Governance
+
+on:
+  pull_request_review:
+    types: [submitted, dismissed]
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  pr-governance:
+    if: github.event_name == 'pull_request_review' || github.event.issue.pull_request != null
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyyaml
+      - run: python tools/validate_pr.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          GITHUB_COMMENT_BODY: ${{ github.event.comment.body || '' }}
+          WAIT_FOR_REACTION_SECONDS: ${{ github.event_name == 'issue_comment' && '300' || '0' }}
+          REVIEW_POLL_SECONDS: '10'
