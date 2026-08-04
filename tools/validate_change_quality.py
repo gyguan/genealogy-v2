@@ -347,11 +347,22 @@ def validate_change(change_dir: Path, reporter: Reporter) -> None:
     state = data.get("status")
     if state not in ACTIVE_STATES:
         return
-    strict = data.get("quality_policy") == STRICT_POLICY
-    if not strict:
+
+    policy = data.get("quality_policy")
+    if policy is None:
+        strict = False
         reporter.warning(
             "CHG-MIGRATION-001",
-            "active legacy Change does not use quality_policy: strict; new format rules are migration warnings",
+            "active legacy Change has no quality_policy; new format rules are migration warnings",
+            rel(metadata_path),
+        )
+    elif policy == STRICT_POLICY:
+        strict = True
+    else:
+        strict = True
+        reporter.error(
+            "CHG-POLICY-001",
+            f"unsupported quality_policy {policy!r}; expected {STRICT_POLICY!r}",
             rel(metadata_path),
         )
 
