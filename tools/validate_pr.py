@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime
@@ -114,7 +115,7 @@ def latest_head_review_request(
     pattern = re.compile(rf"(?im)^@codex\s+review\s+{re.escape(head_sha)}\s*$")
     comments = rest_pages(f"https://api.github.com/repos/{repo}/issues/{number}/comments", token)
     matching = [
-        parse_time(comment["created_at"])
+        parse_time(comment.get("updated_at") or comment["created_at"])
         for comment in comments
         if normalized_login(comment.get("user", {}).get("login")) == author
         and pattern.search(comment.get("body") or "")
@@ -122,12 +123,57 @@ def latest_head_review_request(
     return max(matching) if matching else None
 
 
+def review_evidence(
+    repo: str,
+    number: int,
+    token: str,
+    current_head: str,
+    author: str,
+    rule: dict,
+) -> tuple[bool, str]:
+    actors = {normalized_login(value) for value in rule.get("actors", [])}
+    accepted_states = set(rule.get("accepted_states", []))
+    reviews = rest_pages(f"https://api.github.com/repos/{repo}/pulls/{number}/reviews", token)
+    current_reviews = [
+        review
+        for review in reviews
+        if normalized_login(review.get("user", {}).get("login")) in actors
+        and normalized_login(review.get("user", {}).get("login")) != author
+        and review.get("commit_id") == current_head
+    ]
+    latest_reviews = latest_reviews_by_actor(current_reviews)
+    if any(review.get("state") == "CHANGES_REQUESTED" for review in latest_reviews):
+        return False, "A configured reviewer currently requests changes on the current head."
+    if any(review.get("state") in accepted_states for review in latest_reviews):
+        return True, "Current-head review submission found."
+
+    if rule.get("accept_positive_reaction"):
+        request_time = latest_head_review_request(repo, number, token, author, current_head)
+        if request_time is not None:
+            reactions = rest_pages(
+                f"https://api.github.com/repos/{repo}/issues/{number}/reactions",
+                token,
+            )
+            if any(
+                reaction.get("content") == "+1"
+                and normalized_login(reaction.get("user", {}).get("login")) in actors
+                and normalized_login(reaction.get("user", {}).get("login")) != author
+                and parse_time(reaction["created_at"]) >= request_time
+                for reaction in reactions
+            ):
+                return True, "Head-bound positive review reaction found."
+    return False, "No configured independent review for the current head."
+
+
 def main() -> int:
     token = os.getenv("GITHUB_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
     number_text = os.getenv("PR_NUMBER")
     expected_head = os.getenv("PR_HEAD_SHA")
-    if not all((token, repo, number_text, expected_head)):
+    comment_body = (os.getenv("GITHUB_COMMENT_BODY") or "").strip()
+    wait_seconds = max(0, int(os.getenv("WAIT_FOR_REACTION_SECONDS", "0")))
+    poll_seconds = max(1, int(os.getenv("REVIEW_POLL_SECONDS", "10")))
+    if not all((token, repo, number_text)):
         print("PR governance skipped outside pull request.")
         return 0
 
@@ -143,58 +189,39 @@ def main() -> int:
 
         pull_request = api(f"https://api.github.com/repos/{repo}/pulls/{number}", token)
         current_head = pull_request["head"]["sha"]
-        if current_head != expected_head:
+        if expected_head and current_head != expected_head:
             print(f"PR head SHA mismatch: event={expected_head}, current={current_head}.")
             return 1
 
-        rule = config.get("review", {})
-        actors = {normalized_login(value) for value in rule.get("actors", [])}
-        accepted_states = set(rule.get("accepted_states", []))
         author = normalized_login(pull_request.get("user", {}).get("login"))
+        exact_command = f"@codex review {current_head}"
+        should_wait = comment_body == exact_command and wait_seconds > 0
+        deadline = time.monotonic() + wait_seconds if should_wait else time.monotonic()
 
-        reviews = rest_pages(f"https://api.github.com/repos/{repo}/pulls/{number}/reviews", token)
-        current_reviews = [
-            review
-            for review in reviews
-            if normalized_login(review.get("user", {}).get("login")) in actors
-            and normalized_login(review.get("user", {}).get("login")) != author
-            and review.get("commit_id") == current_head
-        ]
-        latest_reviews = latest_reviews_by_actor(current_reviews)
-        if any(review.get("state") == "CHANGES_REQUESTED" for review in latest_reviews):
-            print("A configured reviewer currently requests changes on the current head.")
-            return 1
-        accepted = any(review.get("state") in accepted_states for review in latest_reviews)
-
-        if not accepted and rule.get("accept_positive_reaction"):
-            request_time = latest_head_review_request(repo, number, token, author, current_head)
-            if request_time is not None:
-                reactions = rest_pages(
-                    f"https://api.github.com/repos/{repo}/issues/{number}/reactions",
-                    token,
-                )
-                accepted = any(
-                    reaction.get("content") == "+1"
-                    and normalized_login(reaction.get("user", {}).get("login")) in actors
-                    and normalized_login(reaction.get("user", {}).get("login")) != author
-                    and parse_time(reaction["created_at"]) >= request_time
-                    for reaction in reactions
-                )
-
-        if not accepted:
-            print(
-                "No configured independent review for the current head. "
-                f"For a reaction-only Codex review, comment exactly: @codex review {current_head}"
+        while True:
+            accepted, reason = review_evidence(
+                repo,
+                number,
+                token,
+                current_head,
+                author,
+                config.get("review", {}),
             )
-            return 1
+            if accepted:
+                break
+            if time.monotonic() >= deadline:
+                print(reason)
+                print(f"Trigger a reaction-only review with the exact command: {exact_command}")
+                return 1
+            time.sleep(poll_seconds)
 
-        if rule.get("require_resolved_threads"):
+        if config.get("review", {}).get("require_resolved_threads"):
             threads = unresolved_threads(repo, number, token)
             if threads:
                 print(f"{len(threads)} unresolved current review thread(s) remain.")
                 return 1
 
-        print("PR governance passed.")
+        print("PR governance passed: " + reason)
         return 0
     except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError, urllib.error.URLError) as exc:
         print(f"PR governance failed: {exc}")
