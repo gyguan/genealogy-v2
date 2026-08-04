@@ -1,8 +1,0 @@
-tickets: []
-
-# - id: TICKET-001
-#   title: deliver one end-to-end behavior
-#   blocked_by: []
-#   specs: [SPEC-001]
-#   acceptance: [observable criterion]
-#   status: ready-for-agent

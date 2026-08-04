@@ -1,0 +1,28 @@
+---
+id: publication
+status: draft
+depends_on: [person-registry, family-and-kinship, lineage-organization, source-and-evidence]
+---
+
+# 谱书出版
+
+## 职责
+
+管理出版快照、谱书版本、章节编排、校稿、印前检查和交付文件。
+
+## 非职责
+
+谱书展示规则不能修改底层人物和关系事实。
+
+## 关键不变量
+
+- 实时数据库与正式出版版本通过不可变快照隔离。
+- 未审核、争议或不允许公开的内容不得进入正式出版物。
+
+## 主要用例
+
+创建出版快照、分卷分册、在线校稿、生成印刷级文件和发布勘误。
+
+## 开放问题
+
+待首个相关 Change 中补充。

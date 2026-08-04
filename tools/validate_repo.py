@@ -1,78 +1,136 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json, sys
+
+import sys
 from pathlib import Path
+
 import yaml
-from jsonschema import Draft202012Validator
 
-ROOT=Path(__file__).resolve().parents[1]
-ERRORS=[]
-def err(msg): ERRORS.append(msg)
-def load_yaml(path):
-    try: return yaml.safe_load(path.read_text(encoding='utf-8'))
-    except Exception as e: err(f'{path.relative_to(ROOT)}: invalid YAML: {e}'); return None
-def validate_schema(data,schema_name,label):
-    schema=json.loads((ROOT/'schemas'/'repository'/schema_name).read_text(encoding='utf-8'))
-    for e in Draft202012Validator(schema).iter_errors(data): err(f'{label}: {e.message}')
-def authority_check(data,label):
-    if not isinstance(data,dict): return
-    if data.get('lifecycle')=='draft' and data.get('authority')=='canonical': err(f'{label}: draft cannot be canonical')
+ROOT = Path(__file__).resolve().parents[1]
+ERRORS: list[str] = []
 
-def main():
-    required=['AGENTS.md','ai/repo-map.yaml','skills/catalog.yaml','product/capability-map.yaml','domains/glossary.yaml','domains/context-map.yaml']
-    for p in required:
-        if not (ROOT/p).exists(): err(f'missing required file: {p}')
 
-    for p,schema in [(ROOT/'product/capability-map.yaml','capability-map.schema.json'),(ROOT/'skills/catalog.yaml','skill-catalog.schema.json')]:
-        data=load_yaml(p)
-        if data is not None:
-            authority_check(data,str(p.relative_to(ROOT)))
-            validate_schema(data,schema,str(p.relative_to(ROOT)))
+def error(message: str) -> None:
+    ERRORS.append(message)
 
-    context=load_yaml(ROOT/'domains/context-map.yaml') or {}
-    authority_check(context,'domains/context-map.yaml')
-    ids={x.get('id') for x in context.get('contexts',[]) if isinstance(x,dict)}
-    for d in sorted((ROOT/'domains').iterdir()):
-        if not d.is_dir() or d.name.startswith('_'): continue
-        manifest=d/'manifest.yaml'
-        if not manifest.exists(): err(f'{d.relative_to(ROOT)}: missing manifest.yaml'); continue
-        data=load_yaml(manifest)
-        if data is None: continue
-        authority_check(data,str(manifest.relative_to(ROOT)))
-        validate_schema(data,'domain-manifest.schema.json',str(manifest.relative_to(ROOT)))
-        if data.get('id')!=d.name: err(f'{manifest.relative_to(ROOT)}: id must match directory')
-        if d.name not in ids: err(f'{manifest.relative_to(ROOT)}: domain absent from context-map.yaml')
-        if not (d/'AGENTS.md').exists(): err(f'{d.relative_to(ROOT)}: missing AGENTS.md')
 
-    catalog=load_yaml(ROOT/'skills/catalog.yaml') or {}
-    names=set()
-    for s in catalog.get('skills',[]):
-        name=s.get('name'); path=ROOT/'skills'/s.get('path','')/'SKILL.md'
-        if name in names: err(f'skills/catalog.yaml: duplicate skill {name}')
+def load_yaml(path: Path):
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        error(f"{path.relative_to(ROOT)}: invalid YAML: {exc}")
+        return None
+
+
+def markdown_frontmatter(path: Path):
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+        error(f"{path.relative_to(ROOT)}: missing YAML frontmatter")
+        return None
+    raw = text[4:].split("\n---\n", 1)[0]
+    try:
+        return yaml.safe_load(raw)
+    except Exception as exc:
+        error(f"{path.relative_to(ROOT)}: invalid frontmatter: {exc}")
+        return None
+
+
+def validate_change(path: Path, template: bool = False) -> None:
+    required = ["change.yaml", "proposal.md", "specs", "design.md", "tasks.md", "evidence"]
+    for item in required:
+        if not (path / item).exists():
+            error(f"{path.relative_to(ROOT)}: missing {item}")
+
+    data = load_yaml(path / "change.yaml") if (path / "change.yaml").exists() else None
+    if template or not isinstance(data, dict):
+        return
+    change_id = data.get("id")
+    if not isinstance(change_id, str) or not path.name.startswith(change_id + "-"):
+        error(f"{path.relative_to(ROOT)}: directory must start with change id")
+    if data.get("status") not in {"draft", "review", "approved", "implementing", "completed", "cancelled"}:
+        error(f"{path.relative_to(ROOT)}/change.yaml: invalid status")
+
+
+def main() -> int:
+    required_files = [
+        "AGENTS.md",
+        "product/README.md",
+        "product/capability-map.yaml",
+        "product/roadmap.md",
+        "domains/glossary.yaml",
+        "domains/context-map.yaml",
+        "changes/_template/change.yaml",
+        "skills/README.md",
+        "tools/validate_repo.py",
+    ]
+    for item in required_files:
+        if not (ROOT / item).exists():
+            error(f"missing required file: {item}")
+
+    forbidden = ["ai", "docs", "knowledge", "evals", "schemas", "reference", "changes/active", "changes/archived"]
+    for item in forbidden:
+        if (ROOT / item).exists():
+            error(f"obsolete path must be removed: {item}")
+
+    context_map = load_yaml(ROOT / "domains" / "context-map.yaml") or {}
+    contexts = context_map.get("contexts", []) if isinstance(context_map, dict) else []
+    context_ids: set[str] = set()
+    for context in contexts:
+        if not isinstance(context, dict) or not isinstance(context.get("id"), str):
+            error("domains/context-map.yaml: every context needs an id")
+            continue
+        context_id = context["id"]
+        context_ids.add(context_id)
+        domain_file = ROOT / "domains" / f"{context_id}.md"
+        if not domain_file.exists():
+            error(f"domains/context-map.yaml: missing domains/{context_id}.md")
+            continue
+        meta = markdown_frontmatter(domain_file)
+        if isinstance(meta, dict) and meta.get("id") != context_id:
+            error(f"{domain_file.relative_to(ROOT)}: id must match context map")
+
+    for domain_file in (ROOT / "domains").glob("*.md"):
+        if domain_file.name == "README.md":
+            continue
+        meta = markdown_frontmatter(domain_file)
+        if isinstance(meta, dict) and meta.get("id") not in context_ids:
+            error(f"{domain_file.relative_to(ROOT)}: absent from context-map.yaml")
+
+    names: set[str] = set()
+    for skill_dir in sorted((ROOT / "skills").iterdir()):
+        if not skill_dir.is_dir() or skill_dir.name == "upstream":
+            continue
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_file.exists():
+            error(f"{skill_dir.relative_to(ROOT)}: missing SKILL.md")
+            continue
+        meta = markdown_frontmatter(skill_file)
+        if not isinstance(meta, dict):
+            continue
+        name = meta.get("name")
+        if name != skill_dir.name:
+            error(f"{skill_file.relative_to(ROOT)}: name must match directory")
+        if name in names:
+            error(f"duplicate skill name: {name}")
         names.add(name)
-        if not path.exists(): err(f'skills/catalog.yaml: missing {path.relative_to(ROOT)}')
-        elif not path.read_text(encoding='utf-8').startswith('---\n'): err(f'{path.relative_to(ROOT)}: missing YAML frontmatter')
 
-    for d in sorted((ROOT/'changes'/'active').iterdir()):
-        if not d.is_dir(): continue
-        change=d/'change.yaml'
-        if not change.exists(): err(f'{d.relative_to(ROOT)}: missing change.yaml'); continue
-        data=load_yaml(change)
-        if data is None: continue
-        authority_check(data,str(change.relative_to(ROOT)))
-        validate_schema(data,'change.schema.json',str(change.relative_to(ROOT)))
-        if not d.name.startswith(data.get('id','')+'-'): err(f'{d.relative_to(ROOT)}: directory must start with change id')
-        for rel in ['context.md','proposal.md','specs','design.md','tasks.md','implementation','validation','reviews','evidence']:
-            if not (d/rel).exists(): err(f'{d.relative_to(ROOT)}: missing {rel}')
+    validate_change(ROOT / "changes" / "_template", template=True)
+    for path in sorted((ROOT / "changes").iterdir()):
+        if path.is_dir() and path.name != "_template":
+            validate_change(path)
 
-    forbidden=[ROOT/'skills'/'engineering',ROOT/'skills'/'task-breakdown',ROOT/'skills'/'proposal-generation',ROOT/'skills'/'spec-delta-generation',ROOT/'skills'/'design-generation',ROOT/'skills'/'dev-task-package',ROOT/'knowledge'/'snapshots',ROOT/'knowledge'/'extracted',ROOT/'evals'/'domain']
-    for p in forbidden:
-        if p.exists(): err(f'legacy path must be removed: {p.relative_to(ROOT)}')
+    load_yaml(ROOT / "product" / "capability-map.yaml")
+    load_yaml(ROOT / "domains" / "glossary.yaml")
 
     if ERRORS:
-        print('Repository validation failed:')
-        for e in ERRORS: print(f'- {e}')
+        print("Repository validation failed:")
+        for item in ERRORS:
+            print(f"- {item}")
         return 1
-    print('Repository validation passed.')
+
+    print("Repository validation passed.")
     return 0
-if __name__=='__main__': sys.exit(main())
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

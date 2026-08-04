@@ -1,16 +1,14 @@
-lifecycle: draft
-authority: provisional
+status: draft
 contexts:
   - id: person-registry
-    lifecycle: planned
+    depends_on: []
   - id: family-and-kinship
-    lifecycle: planned
+    depends_on: [person-registry]
   - id: lineage-organization
-    lifecycle: planned
+    depends_on: [person-registry]
   - id: source-and-evidence
-    lifecycle: planned
+    depends_on: [person-registry, family-and-kinship]
   - id: genealogy-project
-    lifecycle: planned
+    depends_on: [lineage-organization, person-registry]
   - id: publication
-    lifecycle: planned
-relationships: []
+    depends_on: [person-registry, family-and-kinship, lineage-organization, source-and-evidence]

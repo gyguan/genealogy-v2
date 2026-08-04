@@ -1,23 +1,21 @@
 ## Change
 
-- Change ID:
+- Change ID：
 - Spec 路径：
-- Ticket ID：
+- 关联 Issue：
 
 ## 变更内容
 
 ## 验证
 
 - [ ] `python tools/validate_repo.py`
-- [ ] 相关领域 Eval
-- [ ] 相关测试
+- [ ] 相关测试或 Eval
 - [ ] Standards 与 Spec 双轴评审
 
 ## 证据
 
 - 测试结果：
-- 评审报告：
-- 其他证据：
+- 评审结果：
 
 ## 风险
 
