@@ -125,11 +125,18 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
         if spec_id in spec_ids:
             reporter.error("SPEC-ID-001", f"duplicate Spec id {spec_id}", rel(path))
         spec_ids.add(spec_id)
-        if not meaningful(block):
-            reporter.error("SPEC-CONTENT-001", f"{spec_id} has no meaningful requirement", rel(path))
+
         if strict:
-            if not re.search(r"^####\s+Requirement\s*$", block, re.M):
+            requirement_match = re.search(
+                r"^####\s+Requirement\s*$([\s\S]*?)(?=^####\s+Scenario\s+SCN-|\Z)",
+                block,
+                re.M,
+            )
+            if requirement_match is None:
                 reporter.error("SPEC-FORMAT-002", f"{spec_id} needs #### Requirement", rel(path))
+            elif not meaningful(requirement_match.group(1)):
+                reporter.error("SPEC-CONTENT-001", f"{spec_id} Requirement has no meaningful content", rel(path))
+
             scenarios = SCENARIO_PATTERN.findall(block)
             if not scenarios:
                 reporter.error(
@@ -142,7 +149,7 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
                     reporter.error("SPEC-SCENARIO-002", f"duplicate Scenario id {scenario_id}", rel(path))
                 scenario_ids.add(scenario_id)
                 scenario_match = re.search(
-                    rf"^####\s+Scenario\s+{re.escape(scenario_id)}(?:\s+.*?)?$([\s\S]*?)(?=^####\s+Scenario\s+SCN-|^###\s+SPEC-|\Z)",
+                    rf"^####\s+Scenario\s+{re.escape(scenario_id)}(?:\s+.*?)?$([\s\S]*?)(?=^####\s+Scenario\s+SCN-|\Z)",
                     block,
                     re.M,
                 )
@@ -154,6 +161,8 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
                             f"{scenario_id} needs - {keyword}: with observable content",
                             rel(path),
                         )
+        elif not meaningful(block):
+            reporter.error("SPEC-CONTENT-002", f"{spec_id} has no meaningful content", rel(path))
 
     if not spec_ids:
         reporter.error("SPEC-ID-002", "active Change needs at least one Spec requirement", rel(path))
@@ -258,6 +267,7 @@ def validate_traceability(
 ) -> None:
     tasks_path = change_dir / "tasks.md"
     tasks = parse_task_fields(tasks_path, reporter)
+    registry_path_exists = (change_dir / "tests.yaml").exists()
     registry = load_test_registry(change_dir, reporter, strict, spec_ids)
     task_spec_coverage: set[str] = set()
     task_scenario_coverage: set[str] = set()
@@ -287,23 +297,27 @@ def validate_traceability(
                 )
             else:
                 task_scenario_coverage.add(scenario_id)
-        for test_id in csv_values(task.get("Tests")):
-            if test_id not in registry:
-                if strict:
-                    reporter.error("TASK-TEST-001", f"{task_id} references unknown Test {test_id}", rel(tasks_path))
-                else:
-                    reporter.warning("TASK-TEST-002", f"{task_id} Test {test_id} is not registered", rel(tasks_path))
+        if strict or registry_path_exists:
+            for test_id in csv_values(task.get("Tests")):
+                if test_id not in registry:
+                    code = "TASK-TEST-001" if strict else "TASK-TEST-002"
+                    message = f"{task_id} references unknown Test {test_id}"
+                    if strict:
+                        reporter.error(code, message, rel(tasks_path))
+                    else:
+                        reporter.warning(code, message, rel(tasks_path))
 
     for spec_id in sorted(spec_ids - task_spec_coverage):
         if strict:
             reporter.error("TRACE-SPEC-TASK-001", f"{spec_id} is not covered by a Task", rel(change_dir))
         else:
             reporter.warning("TRACE-SPEC-TASK-002", f"{spec_id} is not covered by a Task", rel(change_dir))
-    for spec_id in sorted(spec_ids - test_spec_coverage):
-        if strict:
-            reporter.error("TRACE-SPEC-TEST-001", f"{spec_id} is not covered by a registered Test", rel(change_dir))
-        else:
-            reporter.warning("TRACE-SPEC-TEST-002", f"{spec_id} is not covered by a registered Test", rel(change_dir))
+    if strict or registry_path_exists:
+        for spec_id in sorted(spec_ids - test_spec_coverage):
+            if strict:
+                reporter.error("TRACE-SPEC-TEST-001", f"{spec_id} is not covered by a registered Test", rel(change_dir))
+            else:
+                reporter.warning("TRACE-SPEC-TEST-002", f"{spec_id} is not covered by a registered Test", rel(change_dir))
     if strict:
         for scenario_id in sorted(scenario_ids - task_scenario_coverage):
             reporter.error("TRACE-SCENARIO-TASK-001", f"{scenario_id} is not accepted by a Task", rel(change_dir))
@@ -321,7 +335,7 @@ def validate_change(change_dir: Path, reporter: Reporter) -> None:
     if not strict:
         reporter.warning(
             "CHG-MIGRATION-001",
-            "active legacy Change does not use quality_policy: strict; strict rules run as migration warnings",
+            "active legacy Change does not use quality_policy: strict; new format rules are migration warnings",
             rel(metadata_path),
         )
 
@@ -340,21 +354,22 @@ def validate_change(change_dir: Path, reporter: Reporter) -> None:
         scenario_ids.update(found_scenarios)
     validate_traceability(change_dir, reporter, strict, spec_ids, scenario_ids)
 
-    reporter.review(
-        "REVIEW-BUSINESS-001",
-        "Reviewer must judge whether the requirement and domain semantics are correct; Python does not decide business correctness.",
-        rel(change_dir),
-    )
-    reporter.review(
-        "REVIEW-DESIGN-001",
-        "Reviewer must judge architecture trade-offs, solution proportionality and risk acceptance.",
-        rel(change_dir),
-    )
-    reporter.review(
-        "REVIEW-TEST-001",
-        "Reviewer must judge whether scenarios and tests are sufficient for the real risk, even when traceability is complete.",
-        rel(change_dir),
-    )
+    if strict or state != "completed":
+        reporter.review(
+            "REVIEW-BUSINESS-001",
+            "Reviewer must judge whether the requirement and domain semantics are correct; Python does not decide business correctness.",
+            rel(change_dir),
+        )
+        reporter.review(
+            "REVIEW-DESIGN-001",
+            "Reviewer must judge architecture trade-offs, solution proportionality and risk acceptance.",
+            rel(change_dir),
+        )
+        reporter.review(
+            "REVIEW-TEST-001",
+            "Reviewer must judge whether scenarios and tests are sufficient for the real risk, even when traceability is complete.",
+            rel(change_dir),
+        )
 
 
 def main() -> int:
