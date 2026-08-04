@@ -51,6 +51,17 @@ class PullRequestChangeValidationTests(unittest.TestCase):
         self.assertTrue(reporter.errors)
         self.assertEqual("PR-SCOPE-002", reporter.errors[0].code)
 
+    def test_product_change_can_cover_product_decision(self) -> None:
+        reporter = Reporter()
+        validate_declared_scope(
+            ROOT,
+            "- Change ID：CHG-0004",
+            ["decisions/DEC-0002-product-boundary.md"],
+            reporter,
+        )
+        self.assertFalse(reporter.errors, reporter.render("test"))
+        self.assertIn("product", required_change_types("decisions/DEC-0002-product-boundary.md"))
+
     def test_changed_change_asset_must_be_declared(self) -> None:
         reporter = Reporter()
         validate_declared_scope(
