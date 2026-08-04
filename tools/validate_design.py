@@ -75,6 +75,64 @@ def validate_linked_rows(
             core.fail(f"{core.rel(path)}: every {kind} row must link TEST")
 
 
+def validate_test_registry(change_dir) -> None:
+    """Require the Design checklist to match the formal tests.yaml registry."""
+    change_path = change_dir / "change.yaml"
+    design_path = change_dir / "design.md"
+    if not change_path.is_file() or not design_path.is_file():
+        return
+
+    change = core.load_yaml(change_path)
+    if change is None or not core.is_version_one(
+        change.get("design_contract_version")
+    ):
+        return
+
+    metadata, body = core.read_design(design_path)
+    if metadata is None:
+        return
+    visible = core.visible_markdown(body)
+    test_seam = core.section_body(visible, "测试 Seam")
+    checklist = core.subsection_body(test_seam or "", "测试清单")
+    design_tests = core.table_ids(checklist or "", "TEST-")
+
+    registry_path = change_dir / "tests.yaml"
+    if not registry_path.is_file():
+        core.fail(
+            f"{core.rel(change_dir)}: design contract requires tests.yaml registry"
+        )
+        return
+    registry = core.load_yaml(registry_path)
+    if registry is None:
+        return
+    entries = registry.get("tests")
+    if not isinstance(entries, list):
+        core.fail(f"{core.rel(registry_path)}: tests must be a list")
+        return
+
+    registry_tests: set[str] = set()
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict) or not isinstance(entry.get("id"), str):
+            core.fail(
+                f"{core.rel(registry_path)}: tests[{index}] must declare string id"
+            )
+            continue
+        registry_tests.add(entry["id"])
+
+    unregistered = sorted(design_tests - registry_tests)
+    omitted = sorted(registry_tests - design_tests)
+    if unregistered:
+        core.fail(
+            f"{core.rel(design_path)}: Design test checklist contains "
+            f"unregistered Test(s): {', '.join(unregistered)}"
+        )
+    if omitted:
+        core.fail(
+            f"{core.rel(design_path)}: tests.yaml Test(s) missing from "
+            f"Design checklist: {', '.join(omitted)}"
+        )
+
+
 core.visible_markdown = visible_markdown
 core.validate_linked_rows = validate_linked_rows
 
@@ -86,6 +144,7 @@ def main() -> int:
     if changes_root.exists():
         for path in sorted(changes_root.iterdir()):
             if path.is_dir() and path.name != "_template":
+                validate_test_registry(path)
                 core.validate_change(path)
     if core.ERRORS:
         print("Design validation failed:")
