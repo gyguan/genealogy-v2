@@ -1,0 +1,15 @@
+version: 2
+id: CHG-0004
+title: v01-recovery-loop
+change_type: product
+change_profile: high-risk
+status: implementing
+issue: {repository: gyguan/genealogy-v2, number: 7}
+capabilities: [CAP-PLATFORM-004, CAP-PORT-001]
+affected_domains: [genealogy-project, person-registry, family-and-kinship, lineage-organization, source-and-evidence]
+affected_decisions: [DEC-0005, DEC-0006]
+gates:
+  spec_review: {status: approved, approved_by: gyguan, approved_at: '2026-08-04T12:10:00+08:00', source: github-issue, reference: issue-7, evidence: evidence/spec-review.md}
+  implementation_approval: {status: approved, approved_by: gyguan, approved_at: '2026-08-04T12:12:00+08:00', source: github-issue, reference: issue-7, evidence: evidence/implementation-approval.md}
+  release_approval: {status: blocked, approved_by: null, approved_at: null, source: null, reference: null, evidence: null}
+cancellation_reason: null

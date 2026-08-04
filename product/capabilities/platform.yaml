@@ -48,17 +48,18 @@ group:
     - CAP-PLATFORM-001
     - CAP-EVIDENCE-011
   - id: CAP-PLATFORM-004
-    name: 项目级备份与恢复
-    description: 从早期版本开始支持项目数据、附件和配置的备份与恢复验证
+    name: 项目快照备份与恢复
+    description: 从V0.1起支持项目结构化数据、配置和基础来源的可验证快照备份与恢复，后续版本扩展附件、周期策略和自动化演练
     capability_type: platform
     platform_area: resilience
     primary_domain: genealogy-project
     supporting_domains: []
-    target_release: V0.2
+    target_release: V0.1
     release_priority: must
     status: planned
     planning_confidence: high
-    depends_on: []
+    depends_on:
+    - CAP-PROJECT-001
   - id: CAP-PLATFORM-005
     name: 数据可迁出与标准交付
     description: 导出结构化数据、附件、来源、审计和版本信息
