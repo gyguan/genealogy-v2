@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 from datetime import datetime
@@ -28,6 +29,20 @@ def api(url: str, token: str, method: str = "GET", body=None):
     )
     with urllib.request.urlopen(request) as response:
         return json.load(response)
+
+
+def rest_pages(url: str, token: str) -> list[dict]:
+    separator = "&" if "?" in url else "?"
+    result: list[dict] = []
+    page = 1
+    while True:
+        values = api(f"{url}{separator}per_page=100&page={page}", token)
+        if not isinstance(values, list):
+            raise TypeError(f"Expected a list from {url}")
+        result.extend(values)
+        if len(values) < 100:
+            return result
+        page += 1
 
 
 def normalized_login(value: str | None) -> str:
@@ -76,6 +91,24 @@ def unresolved_threads(repo: str, number: int, token: str) -> list[dict]:
         after = page_info["endCursor"]
 
 
+def latest_head_review_request(
+    repo: str,
+    number: int,
+    token: str,
+    author: str,
+    head_sha: str,
+) -> datetime | None:
+    pattern = re.compile(rf"(?im)^@codex\s+review\s+{re.escape(head_sha)}\s*$")
+    comments = rest_pages(f"https://api.github.com/repos/{repo}/issues/{number}/comments", token)
+    matching = [
+        parse_time(comment["created_at"])
+        for comment in comments
+        if normalized_login(comment.get("user", {}).get("login")) == author
+        and pattern.search(comment.get("body") or "")
+    ]
+    return max(matching) if matching else None
+
+
 def main() -> int:
     token = os.getenv("GITHUB_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -106,7 +139,7 @@ def main() -> int:
         accepted_states = set(rule.get("accepted_states", []))
         author = normalized_login(pull_request.get("user", {}).get("login"))
 
-        reviews = api(f"https://api.github.com/repos/{repo}/pulls/{number}/reviews?per_page=100", token)
+        reviews = rest_pages(f"https://api.github.com/repos/{repo}/pulls/{number}/reviews", token)
         current_reviews = [
             review
             for review in reviews
@@ -120,22 +153,25 @@ def main() -> int:
         accepted = any(review.get("state") in accepted_states for review in current_reviews)
 
         if not accepted and rule.get("accept_positive_reaction"):
-            commit = api(f"https://api.github.com/repos/{repo}/commits/{current_head}", token)
-            commit_time = parse_time(commit["commit"]["committer"]["date"])
-            reactions = api(
-                f"https://api.github.com/repos/{repo}/issues/{number}/reactions?per_page=100",
-                token,
-            )
-            accepted = any(
-                reaction.get("content") == "+1"
-                and normalized_login(reaction.get("user", {}).get("login")) in actors
-                and normalized_login(reaction.get("user", {}).get("login")) != author
-                and parse_time(reaction["created_at"]) >= commit_time
-                for reaction in reactions
-            )
+            request_time = latest_head_review_request(repo, number, token, author, current_head)
+            if request_time is not None:
+                reactions = rest_pages(
+                    f"https://api.github.com/repos/{repo}/issues/{number}/reactions",
+                    token,
+                )
+                accepted = any(
+                    reaction.get("content") == "+1"
+                    and normalized_login(reaction.get("user", {}).get("login")) in actors
+                    and normalized_login(reaction.get("user", {}).get("login")) != author
+                    and parse_time(reaction["created_at"]) >= request_time
+                    for reaction in reactions
+                )
 
         if not accepted:
-            print("No configured independent review or positive reaction for the current head.")
+            print(
+                "No configured independent review for the current head. "
+                f"For a reaction-only Codex review, comment exactly: @codex review {current_head}"
+            )
             return 1
 
         if rule.get("require_resolved_threads"):
