@@ -53,6 +53,19 @@ def parse_time(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
+def latest_reviews_by_actor(reviews: list[dict]) -> list[dict]:
+    latest: dict[str, tuple[tuple[datetime, int], dict]] = {}
+    for review in reviews:
+        actor = normalized_login(review.get("user", {}).get("login"))
+        submitted_at = review.get("submitted_at")
+        if not actor or not isinstance(submitted_at, str):
+            continue
+        order = (parse_time(submitted_at), int(review.get("id") or 0))
+        if actor not in latest or order > latest[actor][0]:
+            latest[actor] = (order, review)
+    return [entry[1] for entry in latest.values()]
+
+
 def unresolved_threads(repo: str, number: int, token: str) -> list[dict]:
     owner, name = repo.split("/", 1)
     query = """
@@ -147,10 +160,11 @@ def main() -> int:
             and normalized_login(review.get("user", {}).get("login")) != author
             and review.get("commit_id") == current_head
         ]
-        if any(review.get("state") == "CHANGES_REQUESTED" for review in current_reviews):
-            print("Current head has requested changes.")
+        latest_reviews = latest_reviews_by_actor(current_reviews)
+        if any(review.get("state") == "CHANGES_REQUESTED" for review in latest_reviews):
+            print("A configured reviewer currently requests changes on the current head.")
             return 1
-        accepted = any(review.get("state") in accepted_states for review in current_reviews)
+        accepted = any(review.get("state") in accepted_states for review in latest_reviews)
 
         if not accepted and rule.get("accept_positive_reaction"):
             request_time = latest_head_review_request(repo, number, token, author, current_head)
