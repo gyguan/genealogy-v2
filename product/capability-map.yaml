@@ -1,8 +1,45 @@
-version: 0.1
+version: 1
 status: draft
-capability_groups: []
+
+capability_groups:
+  - id: CAP-GROUP-PERSON
+    name: 人物与身份
+    capabilities:
+      - id: CAP-PERSON-001
+        name: 人物稳定身份与多姓名管理
+        priority: P0
+        domain: person-registry
+  - id: CAP-GROUP-KINSHIP
+    name: 家庭与谱系
+    capabilities:
+      - id: CAP-KINSHIP-001
+        name: 多维家庭与亲属关系管理
+        priority: P0
+        domain: family-and-kinship
+      - id: CAP-LINEAGE-001
+        name: 宗派支房户组织管理
+        priority: P0
+        domain: lineage-organization
+  - id: CAP-GROUP-EVIDENCE
+    name: 来源与证据
+    capabilities:
+      - id: CAP-EVIDENCE-001
+        name: 来源、主张、证据与正式事实追溯
+        priority: P0
+        domain: source-and-evidence
+  - id: CAP-GROUP-PROJECT
+    name: 修谱协作与交付
+    capabilities:
+      - id: CAP-PROJECT-001
+        name: 修谱项目采集、审核与进度管理
+        priority: P0
+        domain: genealogy-project
+      - id: CAP-PUBLICATION-001
+        name: 不可变出版快照与谱书交付
+        priority: P0
+        domain: publication
 
 rules:
   - every capability has a stable id
-  - every capability declares priority
+  - every capability declares priority and owning domain
   - implementation details do not belong here

@@ -1,14 +1,47 @@
+version: 1
 status: draft
+
 contexts:
   - id: person-registry
-    depends_on: []
+    dependencies: []
   - id: family-and-kinship
-    depends_on: [person-registry]
+    dependencies:
+      - target: person-registry
+        type: identity-reference
   - id: lineage-organization
-    depends_on: [person-registry]
+    dependencies:
+      - target: person-registry
+        type: identity-reference
   - id: source-and-evidence
-    depends_on: [person-registry, family-and-kinship]
+    dependencies:
+      - target: person-registry
+        type: identity-reference
+      - target: family-and-kinship
+        type: fact-reference
+      - target: lineage-organization
+        type: fact-reference
   - id: genealogy-project
-    depends_on: [lineage-organization, person-registry]
+    dependencies:
+      - target: person-registry
+        type: command-orchestration
+      - target: family-and-kinship
+        type: command-orchestration
+      - target: lineage-organization
+        type: command-orchestration
+      - target: source-and-evidence
+        type: evidence-validation
   - id: publication
-    depends_on: [person-registry, family-and-kinship, lineage-organization, source-and-evidence]
+    dependencies:
+      - target: person-registry
+        type: snapshot-source
+      - target: family-and-kinship
+        type: snapshot-source
+      - target: lineage-organization
+        type: snapshot-source
+      - target: source-and-evidence
+        type: snapshot-source
+
+rules:
+  - this file is the only source of truth for domain dependencies
+  - dependencies must be typed and acyclic
+  - domain files must not duplicate dependency declarations

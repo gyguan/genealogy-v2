@@ -1,7 +1,6 @@
 ---
 id: family-and-kinship
 status: draft
-depends_on: [person-registry]
 ---
 
 # 家庭与亲属关系

@@ -1,12 +1,15 @@
 # Tasks
 
-每个任务必须包含：
+每个真实任务使用 `## TASK-xxxx` 标题，并维护以下机器可识别字段：
 
-- 稳定任务 ID；
-- 关联 Spec ID；
-- 前置依赖；
-- 纵向实现范围；
-- 验收标准；
-- 测试方式；
-- 完成定义；
-- 回滚条件。
+```markdown
+## TASK-0001 task-title
+
+- Specs: SPEC-DOMAIN-001
+- Status: planned
+- Depends on: none
+- Tests: TEST-DOMAIN-001
+- Evidence: evidence/TASK-0001.md
+```
+
+合法状态为 `planned`、`ready`、`in-progress`、`completed`、`blocked`、`cancelled`。每个任务还必须说明纵向实现范围、验收标准、完成定义和回滚条件。

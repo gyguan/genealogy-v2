@@ -1,7 +1,6 @@
 ---
 id: person-registry
 status: draft
-depends_on: []
 ---
 
 # 人物身份
