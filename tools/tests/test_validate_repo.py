@@ -32,13 +32,13 @@ class RepositoryValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("must use high-risk", result.stdout)
 
-    def test_implementing_change_requires_tasks(self) -> None:
+    def test_active_change_requires_tasks(self) -> None:
         root = copy_repo(self)
         path = root / "changes/CHG-0004-v01-recovery-loop/tasks.md"
         path.write_text("# Tasks\n", encoding="utf-8")
         result = run(root, "tools/validate_repo.py")
         self.assertNotEqual(0, result.returncode)
-        self.assertIn("implementing change needs Tasks", result.stdout)
+        self.assertIn("change needs Tasks", result.stdout)
 
     def test_active_spec_requires_requirement_id(self) -> None:
         root = copy_repo(self)
