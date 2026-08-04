@@ -2,7 +2,7 @@ version: 1
 id: CHG-0003
 title: refine-product-blueprint
 change_type: product
-status: implementing
+status: completed
 issue:
   repository: gyguan/genealogy-v2
   number: 5
@@ -146,8 +146,8 @@ gates:
     approved_at: '2026-08-04T11:22:00+08:00'
     evidence: evidence/implementation-approval.md
   release_approval:
-    status: pending
-    approved_by: null
-    approved_at: null
-    evidence: null
+    status: approved
+    approved_by: repository-owner
+    approved_at: '2026-08-04T11:47:00+08:00'
+    evidence: evidence/release-approval.md
 cancellation_reason: null
