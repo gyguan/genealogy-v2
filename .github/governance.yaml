@@ -1,5 +1,6 @@
 version: 1
-bootstrap_pull_requests: []
+bootstrap_pull_requests:
+- 8
 review:
   actors:
   - chatgpt-codex-connector
