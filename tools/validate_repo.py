@@ -263,6 +263,23 @@ def validate_decisions(domain_ids: set[str]) -> tuple[set[str], dict[str, dict]]
     return ids, records
 
 
+def validate_evidence_path(change_dir: Path, value: str, label: str) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        fail(f"{rel(change_dir)}: {label} needs an evidence path")
+        return False
+    evidence_root = (change_dir / "evidence").resolve()
+    target = (change_dir / value).resolve()
+    try:
+        target.relative_to(evidence_root)
+    except ValueError:
+        fail(f"{rel(change_dir)}: {label} must stay under evidence/: {value}")
+        return False
+    if not target.is_file():
+        fail(f"{rel(change_dir)}: {label} evidence does not exist: {value}")
+        return False
+    return True
+
+
 def validate_gate(change_dir: Path, name: str, value, version: int) -> str | None:
     if not isinstance(value, dict) or value.get("status") not in GATE_STATES:
         fail(f"{rel(change_dir)}/change.yaml: gate {name} must have a valid status")
@@ -278,8 +295,8 @@ def validate_gate(change_dir: Path, name: str, value, version: int) -> str | Non
         if version >= 2 and value.get("source") not in GATE_SOURCES:
             fail(f"{rel(change_dir)}/change.yaml: gate {name} has invalid source")
         evidence = value.get("evidence")
-        if isinstance(evidence, str) and not (change_dir / evidence).is_file():
-            fail(f"{rel(change_dir)}/change.yaml: gate {name} evidence does not exist: {evidence}")
+        if isinstance(evidence, str):
+            validate_evidence_path(change_dir, evidence, f"gate {name}")
     return state
 
 
@@ -464,10 +481,10 @@ def validate_change(
         if not item.get("tests"):
             fail(f"{rel(change_dir)}/tasks.md: {task_id} needs Tests")
         evidence = item.get("evidence")
-        if item.get("status") == "completed" and (
-            not evidence or not (change_dir / evidence).is_file()
-        ):
-            fail(f"{rel(change_dir)}/tasks.md: {task_id} evidence does not exist: {evidence}")
+        if item.get("status") == "completed" and isinstance(evidence, str):
+            validate_evidence_path(change_dir, evidence, f"Task {task_id}")
+        elif item.get("status") == "completed":
+            fail(f"{rel(change_dir)}/tasks.md: {task_id} needs Evidence")
     validate_task_dependencies(change_dir, tasks)
 
     require_sections(
