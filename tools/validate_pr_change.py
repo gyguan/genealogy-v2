@@ -15,6 +15,7 @@ from diagnostics import Reporter
 ROOT = Path(__file__).resolve().parents[1]
 CHANGE_ID_PATTERN = re.compile(r"\bCHG-\d{4}\b")
 CHANGE_DECLARATION_PATTERN = re.compile(r"(?im)^-\s*Change IDs?\s*[:：]\s*(.+?)\s*$")
+DECISION_CHANGE_TYPES = {"product", "domain", "engineering", "governance", "security"}
 
 
 def api(url: str, token: str):
@@ -72,8 +73,10 @@ def resolve_change(root: Path, change_id: str) -> Path | None:
 def required_change_types(path: str) -> set[str]:
     if path.startswith("product/"):
         return {"product"}
-    if path.startswith("domains/") or path.startswith("decisions/"):
+    if path.startswith("domains/"):
         return {"domain"}
+    if path.startswith("decisions/"):
+        return set(DECISION_CHANGE_TYPES)
     if path == "SECURITY.md":
         return {"security", "governance"}
     if (
