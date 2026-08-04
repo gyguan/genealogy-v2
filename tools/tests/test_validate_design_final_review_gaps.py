@@ -114,6 +114,53 @@ class FinalDesignReviewGapTests(unittest.TestCase):
 
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
+    def test_blockquote_nested_in_wide_list_does_not_supply_id(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.md"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("MIG-GOV-DESIGN-001", "MIGRATION-GOV-DESIGN-001", 1)
+        text = text.replace(
+            "## 迁移方案\n",
+            "## 迁移方案\n\n100. 示例容器\n     > MIG-GOV-QUOTED-001 只是引用示例。\n\n",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+
+        result = run(root, "tools/validate_design.py")
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("required facet migration needs stable ID", result.stdout)
+
+    def test_matrix_reads_tests_only_from_test_column(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.md"
+        text = path.read_text(encoding="utf-8").replace(
+            "| SPEC-GOV-DESIGN-001 | FLOW-GOV-DESIGN-001 | DESIGN-GOV-003 | Design Contract v1 | TEST-DESIGN-001、TEST-DESIGN-002 |",
+            "| SPEC-GOV-DESIGN-001 | TEST-DESIGN-001 | DESIGN-GOV-003 | Design Contract v1 | |",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+
+        result = run(root, "tools/validate_design.py")
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("must link at least one Test in the Test column", result.stdout)
+
+    def test_orphan_pipe_rows_do_not_form_traceability_matrix(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.md"
+        text = path.read_text(encoding="utf-8").replace(
+            "| Spec ID | Flow/Use Case | 设计结论 | Contract | Test |\n|---|---|---|---|---|\n",
+            "",
+            1,
+        )
+        path.write_text(text, encoding="utf-8")
+
+        result = run(root, "tools/validate_design.py")
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("missing or empty ### Spec 追踪矩阵", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
