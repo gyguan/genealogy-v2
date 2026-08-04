@@ -8,7 +8,7 @@ quality_policy: strict
 status: completed
 issue:
   repository: gyguan/genealogy-v2
-  number: 9
+  number: 12
 capabilities: []
 affected_domains: []
 affected_decisions:
