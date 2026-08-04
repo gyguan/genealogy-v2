@@ -66,6 +66,26 @@ class RepositoryValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("missing required file: changes/_template/design.md", result.stdout)
 
+    def test_gate_evidence_cannot_escape_change_evidence_directory(self) -> None:
+        root = copy_repo(self)
+        path = root / "changes/CHG-0004-v01-recovery-loop/change.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["gates"]["spec_review"]["evidence"] = "../../README.md"
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_repo.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("must stay under evidence/", result.stdout)
+
+    def test_task_evidence_cannot_escape_change_evidence_directory(self) -> None:
+        root = copy_repo(self)
+        path = root / "changes/CHG-0004-v01-recovery-loop/tasks.md"
+        text = path.read_text(encoding="utf-8")
+        text = text.replace("- Evidence: evidence/TASK-PRODUCT-011.md", "- Evidence: ../../README.md", 1)
+        path.write_text(text, encoding="utf-8")
+        result = run(root, "tools/validate_repo.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("must stay under evidence/", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
