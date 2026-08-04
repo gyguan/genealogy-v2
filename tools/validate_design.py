@@ -80,7 +80,7 @@ _RAW_HTML_BLOCK_TAGS = {
 }
 _RAW_HTML_UNTIL_CLOSE = {"pre", "script", "style", "textarea"}
 _COMPLETE_HTML_TAG = re.compile(
-    r"^</?[A-Za-z][A-Za-z0-9-]*(?:\s+[^<>]*?)?\s*/?>\s*$"
+    r'''^</?[A-Za-z][A-Za-z0-9-]*(?:\s+(?:[^<>"']+|"[^"]*"|'[^']*')*)?\s*/?>\s*$'''
 )
 _RAW_PLACEHOLDER = re.compile(
     r"(?<![A-Za-z0-9_])(?:TODO|TBD)(?![A-Za-z0-9_])|待确认|待补充",
@@ -244,8 +244,8 @@ def validate_original_review_markers(change_dir) -> None:
         )
 
 
-def validate_required_domain_definitions(change_dir) -> None:
-    """Require a required domain facet to use traceable RULE/INV rows."""
+def validate_required_definition_facets(change_dir) -> None:
+    """Require domain and security facets to use traceable definition rows."""
     change_path = change_dir / "change.yaml"
     design_path = change_dir / "design.md"
     if not change_path.is_file() or not design_path.is_file():
@@ -263,25 +263,28 @@ def validate_required_domain_definitions(change_dir) -> None:
         or core.spec_gate_approved(change)
     )
     applicability = metadata.get("applicability")
-    if (
-        not review_ready
-        or not isinstance(applicability, dict)
-        or applicability.get("domain_model") != "required"
-    ):
+    if not review_ready or not isinstance(applicability, dict):
         return
 
     visible = core.visible_markdown(body)
-    domain_section = core.section_body(visible, "领域与数据影响") or ""
-    definitions: set[str] = set()
-    for line in domain_section.splitlines():
-        cells = core.table_cells(line)
-        if cells and re.fullmatch(r"(?:RULE|INV)-[A-Z0-9-]+", cells[0]):
-            definitions.add(cells[0])
-    if not definitions:
-        core.fail(
-            f"{core.rel(design_path)}: required facet domain_model needs a "
-            "canonical RULE/INV definition row with Spec and Test links"
-        )
+    requirements = (
+        ("domain_model", "领域与数据影响", r"(?:RULE|INV)-[A-Z0-9-]+", "RULE/INV"),
+        ("security_privacy", "安全与隐私", r"SEC-[A-Z0-9-]+", "SEC"),
+    )
+    for facet, title, pattern, label in requirements:
+        if applicability.get(facet) != "required":
+            continue
+        section = core.section_body(visible, title) or ""
+        definitions: set[str] = set()
+        for line in section.splitlines():
+            cells = core.table_cells(line)
+            if cells and re.fullmatch(pattern, cells[0]):
+                definitions.add(cells[0])
+        if not definitions:
+            core.fail(
+                f"{core.rel(design_path)}: required facet {facet} needs a "
+                f"canonical {label} definition row with Spec/Test traceability"
+            )
 
 
 def validate_linked_rows(
@@ -458,7 +461,7 @@ def main() -> int:
         for path in sorted(changes_root.iterdir()):
             if path.is_dir() and path.name != "_template":
                 validate_original_review_markers(path)
-                validate_required_domain_definitions(path)
+                validate_required_definition_facets(path)
                 validate_test_registry(path)
                 core.validate_change(path)
     if core.ERRORS:
