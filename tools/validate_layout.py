@@ -21,6 +21,12 @@ OBSOLETE_PATHS = (
     "changes/active",
     "changes/archived",
 )
+REQUIRED_PATHS = (
+    "changes/_template/tests.yaml",
+    "tools/diagnostics.py",
+    "tools/validate_change_quality.py",
+    "tools/validate_pr_change.py",
+)
 
 
 def main() -> int:
@@ -46,6 +52,10 @@ def main() -> int:
     for relative_path in OBSOLETE_PATHS:
         if (ROOT / relative_path).exists():
             errors.append(f"obsolete repository path is forbidden: {relative_path}")
+
+    for relative_path in REQUIRED_PATHS:
+        if not (ROOT / relative_path).exists():
+            errors.append(f"required governance asset is missing: {relative_path}")
 
     if errors:
         for error in errors:
