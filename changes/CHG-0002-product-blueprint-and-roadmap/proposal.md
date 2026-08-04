@@ -8,7 +8,7 @@
 
 ## 关联产品能力
 
-本Change建立第一版全量产品能力事实源，新增能力ID将在 `product/capability-map.yaml` 中统一维护。由于这是能力基线创建Change，`change.yaml` 不重复列出全部新增能力ID。
+本Change建立第一版全量产品能力事实源。全部新增Capability ID同时维护在 `product/capability-map.yaml` 和 `change.yaml` 中，以满足Capability—Spec—Task—Evidence追踪；能力的名称、描述、领域、版本和依赖只在Capability Map中维护，避免重复事实源。
 
 ## 目标
 
