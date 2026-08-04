@@ -27,6 +27,22 @@ class ChangeQualityValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("CHG-DOC-003", result.stdout)
 
+    def test_strict_spec_requires_requirement_content(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "specs/repository-governance.md"
+        text = path.read_text(encoding="utf-8")
+        text = re.sub(
+            r"(## SPEC-GOV-007[^\n]*\n#### Requirement\n).*?(?=\n#### Scenario)",
+            r"\1",
+            text,
+            count=1,
+            flags=re.S,
+        )
+        path.write_text(text, encoding="utf-8")
+        result = run(root, "tools/validate_change_quality.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("SPEC-CONTENT-001", result.stdout)
+
     def test_strict_spec_requires_scenario(self) -> None:
         root = copy_repo(self)
         path = root / CHANGE / "specs/repository-governance.md"
