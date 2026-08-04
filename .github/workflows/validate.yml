@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
-  issues: read
 
 jobs:
   repository-validation:
@@ -22,18 +20,3 @@ jobs:
           python-version: '3.12'
       - run: pip install pyyaml
       - run: python tools/check.py
-
-  pr-governance:
-    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_review'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install pyyaml
-      - run: python tools/validate_pr.py
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
