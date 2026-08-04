@@ -44,6 +44,16 @@ class ChangeQualityValidationTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         self.assertIn("CHG-MIGRATION-002", result.stdout)
 
+    def test_unknown_quality_policy_is_an_error(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "change.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["quality_policy"] = "stric"
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_change_quality.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("CHG-POLICY-001", result.stdout)
+
     def test_strict_spec_requires_requirement_content(self) -> None:
         root = copy_repo(self)
         path = root / CHANGE / "specs/repository-governance.md"
