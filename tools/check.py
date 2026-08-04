@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMANDS = (
+    ("layout validation", [sys.executable, "tools/validate_layout.py"]),
     ("repository validation", [sys.executable, "tools/validate_repo.py"]),
     ("product validation", [sys.executable, "tools/validate_product.py"]),
     ("regression tests", [sys.executable, "-m", "unittest", "discover", "-s", "tools/tests", "-p", "test_*.py"]),
