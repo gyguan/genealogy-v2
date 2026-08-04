@@ -1,31 +1,36 @@
 name: Repository Validation
+
 on:
   pull_request:
   pull_request_review:
     types: [submitted, dismissed]
   push:
     branches: [main]
+
 permissions:
   contents: read
   pull-requests: read
   issues: read
+
 jobs:
   repository-validation:
-    if: github.event_name != 'pull_request_review'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
+        with:
+          python-version: '3.12'
       - run: pip install pyyaml
       - run: python tools/check.py
+
   pr-governance:
     if: github.event_name == 'pull_request' || github.event_name == 'pull_request_review'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
+        with:
+          python-version: '3.12'
       - run: pip install pyyaml
       - run: python tools/validate_pr.py
         env:
