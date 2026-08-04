@@ -11,17 +11,25 @@ from validate_pr_change import extract_change_ids, required_change_types, valida
 
 
 class PullRequestChangeValidationTests(unittest.TestCase):
-    def test_extracts_unique_change_ids(self) -> None:
-        self.assertEqual(
-            {"CHG-0006", "CHG-0007"},
-            extract_change_ids("Change: CHG-0006\nRelated: CHG-0007 and CHG-0006"),
+    def test_extracts_only_explicit_change_declarations(self) -> None:
+        body = "- Change ID：CHG-0006, CHG-0007\nContext mentions CHG-0004 but does not declare it"
+        self.assertEqual({"CHG-0006", "CHG-0007"}, extract_change_ids(body))
+
+    def test_historical_change_mention_does_not_expand_scope(self) -> None:
+        reporter = Reporter()
+        validate_declared_scope(
+            ROOT,
+            "- Change ID：CHG-0006\nHistorical context: CHG-0004",
+            ["changes/CHG-0004-v01-recovery-loop/change.yaml"],
+            reporter,
         )
+        self.assertTrue(any(item.code == "PR-SCOPE-001" for item in reporter.errors))
 
     def test_governance_change_covers_tools_and_workflows(self) -> None:
         reporter = Reporter()
         validate_declared_scope(
             ROOT,
-            "Change ID: CHG-0006",
+            "- Change ID：CHG-0006",
             ["tools/diagnostics.py", ".github/workflows/validate.yml"],
             reporter,
         )
@@ -31,7 +39,7 @@ class PullRequestChangeValidationTests(unittest.TestCase):
         reporter = Reporter()
         validate_declared_scope(
             ROOT,
-            "Change ID: CHG-0006",
+            "- Change ID：CHG-0006",
             ["product/releases.yaml"],
             reporter,
         )
@@ -42,7 +50,7 @@ class PullRequestChangeValidationTests(unittest.TestCase):
         reporter = Reporter()
         validate_declared_scope(
             ROOT,
-            "Change ID: CHG-0006",
+            "- Change ID：CHG-0006",
             ["changes/CHG-0004-v01-recovery-loop/change.yaml"],
             reporter,
         )
