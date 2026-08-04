@@ -2,7 +2,7 @@
 
 本目录按能力组维护正式产品能力，避免单个超大 YAML 文件成为 AI 和协作瓶颈。
 
-每个文件只包含一个能力组。全局文件清单和规则位于 `../capability-map.yaml`，版本定义位于 `../releases.yaml`。
+每个文件只包含一个能力组。全局文件清单和规则位于 `../capability-map.yaml`，版本定义位于 `../releases.yaml`。Manifest 不得重复维护 Capability 名称、分组或领域投影。
 
 ## 字段含义
 

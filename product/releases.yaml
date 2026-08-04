@@ -7,31 +7,65 @@ releases:
   status: planned
   planning_confidence: high
   planning_depth: detailed
-  goal: 以虚构数据完成项目、人物、家庭单元、普通关系、基础来源审核、世系查询和结构化导出的最小闭环
+  goal: 以虚构数据完成项目、人物、家庭单元、普通关系、基础来源审核、世系查询、结构化导出和快照恢复的最小闭环
+  closure:
+    source: CAP-EVIDENCE-010
+    review: CAP-EVIDENCE-010
+    readback: CAP-QUERY-004
+    portability: CAP-PORT-001
+    recovery: CAP-PLATFORM-004
 - id: V0.2
   name: 资料采集与基础治理版
   status: planned
   planning_confidence: high
   planning_depth: detailed
-  goal: 支持账号、角色、支房任务范围、在线与Excel采集、多级审核、操作记录、备份和过程数据导出
+  goal: 支持账号、角色、支房任务范围、在线与Excel采集、多级审核、操作记录、备份策略增强和过程数据导出
+  closure:
+    source: CAP-EVIDENCE-010
+    review: CAP-COLLECT-006
+    authorization: CAP-ACCESS-003
+    readback: CAP-QUERY-004
+    portability: CAP-PORT-002
+    recovery: CAP-PLATFORM-004
 - id: V0.3
   name: 中国式复杂谱系版
   status: planned
   planning_confidence: high
   planning_depth: detailed
   goal: 正确表达复杂亲属、谱籍承继、字辈、世次和历史时空语义，并保持可查询和可迁出
+  closure:
+    source: CAP-EVIDENCE-010
+    review: CAP-COLLECT-006
+    authorization: CAP-ACCESS-003
+    readback: CAP-QUERY-005
+    portability: CAP-PORT-003
+    recovery: CAP-PLATFORM-004
 - id: V0.4
   name: 证据与质量治理版
   status: planned
   planning_confidence: high
   planning_depth: bounded
   goal: 建立完整来源、主张、证据、冲突治理、正式事实、数字资产和质量报告闭环
+  closure:
+    source: CAP-EVIDENCE-001
+    review: CAP-EVIDENCE-007
+    authorization: CAP-ACCESS-003
+    readback: CAP-EVIDENCE-009
+    portability: CAP-PORT-004
+    recovery: CAP-PLATFORM-004
 - id: V0.5
   name: 谱书编修与出版版
   status: planned
   planning_confidence: high
   planning_depth: bounded
   goal: 从审核后的结构化事实形成带基础隐私控制、可复现快照和可交付数据包的谱书
+  closure:
+    source: CAP-EVIDENCE-001
+    review: CAP-EVIDENCE-007
+    authorization: CAP-QUERY-008
+    readback: CAP-PUBLICATION-007
+    portability: CAP-PORT-005
+    recovery: CAP-PLATFORM-004
 - id: V1.0
   name: 商用加固与真实项目交付版
   status: planned
@@ -62,3 +96,5 @@ rules:
 - planning_depth uses detailed, bounded, outcome-only or candidate-only
 - capabilities may not depend on a capability targeted for a later release
 - release changes must be introduced through an approved product Change
+- detailed and bounded releases declare closure capability references
+- closure capability references must exist and be available no later than the release

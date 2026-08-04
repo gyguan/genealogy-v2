@@ -1,92 +1,44 @@
 # AI 与贡献者规则
 
-本仓库的产品资产和后续代码主要由 AI 生成。所有 Agent 和贡献者必须遵守本文件。
+本仓库主要由 AI 辅助生成，所有 Agent 与贡献者必须遵守本文件。
 
-## 必读顺序
+## 最小读取顺序
 
-1. 根 `AGENTS.md` 与 `SECURITY.md`；
-2. 当前 `changes/<change-id>/change.yaml` 和 `proposal.md`；
-3. `product/releases.yaml`、`product/capability-map.yaml` 与本次关联的 `product/capabilities/*.yaml`；
-4. `domains/context-map.yaml`、受影响的 `domains/*.md` 与 `domains/glossary.yaml`；
-5. 相关 `decisions/`；
-6. 本次使用的 `skills/<skill>/SKILL.md`。
+1. `AGENTS.md` 与 `SECURITY.md`；
+2. 当前 Change 的 `change.yaml`、`proposal.md`；
+3. 运行 `python tools/context.py <CHG-ID>`，只读取输出的版本、Capability、领域和 Decision；
+4. 本次使用的 Skill。
 
-除产品规划任务外，不应默认加载全部能力文件；应根据 Change 中的 Capability ID 定位对应能力组，减少无关上下文。
+不得默认加载全部 Capability。`product/capability-map.yaml` 只保存 Manifest，正式能力唯一来源是 `product/capabilities/*.yaml`。
 
 ## 指令优先级
+平台安全、法律与合规 > SECURITY 与全局红线 > 正式领域不变量与 Accepted Decision > 已批准 Change > 用户边界内要求 > Skill > 参考材料。
 
-```text
-平台安全、法律与合规约束
-> SECURITY.md 与本文件全局红线
-> 正式领域不变量与已接受 Decision
-> 已批准 Change 的范围、约束与 Gate
-> 用户在上述边界内的当前要求
-> 项目 Skill
-> 其他参考材料
-```
-
-用户可以提出修改产品规则、领域规则、Decision 或治理规则，但不得在同一次实现任务中静默绕过。此类修改必须建立独立 Change，经评审批准后再生效。
-
-## 权威来源
-
-- `product/releases.yaml`：版本ID、目标、状态、规划深度与置信度事实源；
-- `product/capability-map.yaml`：产品能力文件Manifest与全局规则；
-- `product/capabilities/*.yaml`：产品能力事实源；
-- `product/roadmap.md`：版本用户闭环、边界、验收、成功指标和风险；
-- `domains/glossary.yaml`：统一业务术语事实源；
-- `domains/*.md`：领域职责、非职责与不变量事实源；
-- `domains/context-map.yaml`：领域依赖关系唯一事实源，领域文件不得重复声明依赖；
-- `changes/<change-id>/`：单次增量需求、设计、任务与证据事实源；
-- `decisions/DEC-*.md`：长期有效决策事实源；
-- `skills/`：执行方法，不得覆盖正式产品、领域、Change 或 Decision。
-
-Capability 的 `primary_domain` 只表示产品责任归属，不等同于代码模块归属、编译依赖或直接数据访问权限。
-
-## Change 要求
-
-非平凡需求必须创建 `changes/CHG-xxxx-name/`，至少包含：
-
-- `change.yaml`：唯一类型、状态、关联资产和 Gate；
-- `proposal.md`：背景、目标、非目标、范围和修改边界；
-- `specs/`：按领域或产品范围维护的 Spec Delta；
-- `design.md`：方案、权衡、测试 Seam 和风险；
-- `tasks.md`：纵向任务、测试和完成定义；
-- `evidence/`：验证、评审和测试证据。
-
-GitHub Issue 是执行视图，批准后的 Change Spec 才是需求事实源。Change 状态必须与 Gate、Task 和 Evidence 一致，并通过 `tools/validate_repo.py` 校验。
+## Change 与效率
+- 风险控制与 Change Profile 匹配：lightweight、standard、high-risk；
+- 产品、领域、安全必须 high-risk；治理不得 lightweight；
+- 使用 `new_change.py` 参数化生成，不手工复制模板；
+- Task 按可验证纵向行为拆分，使用最少可独立交付切片；
+- 统一执行 `python tools/check.py`。
 
 ## 产品规划纪律
+- Release 事实源为 `product/releases.yaml`；Capability 唯一事实源为分组文件；
+- Capability 责任不等同代码归属；依赖不得循环或版本倒挂；
+- 处于 `detailed` 或 `bounded` 规划深度的实施版本必须声明来源、审核、查询、迁出与恢复闭环；首个实施版本之后还必须声明授权闭环；
+- 版本与 Capability 调整必须通过产品 Change。
 
-- 版本顺序与状态只在 `product/releases.yaml` 维护；
-- Capability按能力组维护，不在Roadmap重复全部特性；
-- `release_priority`只表示目标版本内的must、should或could；
-- candidate能力不构成交付承诺；
-- Capability依赖不得形成循环，也不得依赖更晚版本；
-- 每个实施版本都必须具备与范围匹配的来源、审核、授权、查询、迁出和恢复闭环；
-- 版本或Capability调整必须通过产品Change，不得直接修改正式基线。
-
-## 开发纪律
-
-- 重要歧义先使用 `grill-with-docs`。
-- 新术语或领域边界通过 `domain-modeling` 固化。
-- 需求通过 `to-spec` 形成 OpenSpec，并经人工评审后再实现。
-- `to-tickets` 将需求拆成可独立验证的纵向切片。
-- 编码在批准的测试 Seam 上执行 TDD。
-- 完成后执行 Standards 与 Spec 双轴评审。
-- 合入前运行 `python tools/validate_repo.py` 和仓库回归测试。
+## 评审与合入
+- 当前 Head SHA 必须获得独立 Review；新提交后旧 Review 失效；
+- 触发 Codex 时使用精确命令 `@codex review <40位Head SHA>`；若 Codex 仅以 👍 表示无意见，该反应必须发生在这条服务器记录的 Head 绑定命令之后；
+- 所有有效 Review Thread 必须解决或明确接受；
+- Gate 记录来源、引用、审批人和证据；
+- CI 通过不替代 Standards/Spec 双轴评审；
+- 合入前运行 `python tools/check.py`。
 
 ## 全局红线
-
-- 不复制旧系统业务代码、表结构或兼容层。
-- 不混淆自然人身份、姓名、家庭角色和谱系归属。
-- 不混淆血缘、家庭、法律、抚养、谱籍和祭祀承继关系。
-- 不以谱书展示结果反推正式业务事实。
-- 不绕过审核直接写入正式族谱事实。
-- 不把研究材料、示例或未批准 Change 当成正式需求。
-- 不引入无法建立约束的万能关系模型。
-- 不通过删除、降低或绕过测试和验收标准完成任务。
-- 不提交真实族人的敏感个人信息。
-
-## 完成定义
-
-必须证明目标和非目标得到满足、领域不变量未被破坏、Capability/Spec/Task/代码/测试/Evidence 可追踪、正例反例边界案例通过、隐私与安全检查通过、双轴评审无阻断问题。
+- 不复制旧系统业务代码、表结构或兼容层；
+- 不混淆自然人、姓名、家庭角色和谱系归属；
+- 不混淆血缘、家庭、法律、抚养、谱籍和祭祀承继；
+- 不以展示结果反推业务事实，不绕过审核写正式事实；
+- 不使用万能关系模型，不删除或降低测试与验收；
+- 不提交真实族人敏感信息。

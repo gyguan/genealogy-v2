@@ -1,0 +1,12 @@
+version: 1
+bootstrap_pull_requests:
+- 8
+review:
+  actors:
+  - chatgpt-codex-connector
+  accepted_states:
+  - APPROVED
+  - COMMENTED
+  accept_positive_reaction: true
+  require_current_head: true
+  require_resolved_threads: true
