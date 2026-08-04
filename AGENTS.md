@@ -29,6 +29,16 @@
 - 不得为了自动化而让 Python、规则扫描或 LLM 自动裁决 Review-only 问题；
 - Warning 必须在评审中解决或明确接受，高风险 Change 仍需独立人类 APPROVED。
 
+## 需求设计契约
+- 从 `CHG-0007` 起，所有 Change 必须声明 `design_contract_version: 1`，并使用 `changes/_template/design.md`；
+- Design Frontmatter 的 Change、Capability、Spec、Domain 和 Decision 必须与正式资产完全一致；
+- 先判定 `applicability`：`required` 必须使用稳定 ID 给出可测试设计，`not-applicable` 必须写明 `N/A: <facet> - <具体原因>`；
+- 设计必须保留八个固定章节，不得用自由格式文档替代；
+- 业务规则和不变量必须同时追踪到 Spec 与 Test；每个 Spec 必须进入测试追踪矩阵；
+- `open_questions > 0`、残留 TODO/TBD/待确认或设计引用不一致时，不得批准 Spec Gate；
+- 设计不得静默修改领域不变量、Accepted Decision、产品范围或安全红线；需要修改时必须建立独立 Change；
+- `tools/validate_design.py` 与 `tools/check.py` 是确定性门禁，Skill 或人工判断不得绕过。
+
 ## 产品规划纪律
 - Release 事实源为 `product/releases.yaml`；Capability 唯一事实源为分组文件；
 - Capability 责任不等同代码归属；依赖不得循环或版本倒挂；

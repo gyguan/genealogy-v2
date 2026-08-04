@@ -71,11 +71,12 @@ def spec_scopes(kind: str, domains: list[str]) -> list[str]:
     return SCOPE_BY_TYPE[kind]
 
 
-def write_spec_skeleton(path: Path, change_id: str, scope: str) -> None:
+def write_spec_skeleton(path: Path, change_id: str, scope: str) -> str:
+    spec_id = "SPEC-REPLACE-ME"
     path.write_text(
         f"# {scope} Spec Delta\n\n"
         "## ADDED\n\n"
-        "## SPEC-REPLACE-ME Observable requirement\n"
+        f"## {spec_id} Observable requirement\n"
         "#### Requirement\n"
         f"<!-- {change_id}: describe one observable requirement. -->\n\n"
         "#### Scenario SCN-REPLACE-ME-01\n"
@@ -84,6 +85,38 @@ def write_spec_skeleton(path: Path, change_id: str, scope: str) -> None:
         "- Then: describe the observable result\n",
         encoding="utf-8",
     )
+    return spec_id
+
+
+def update_design_contract(
+    path: Path,
+    change_id: str,
+    capabilities: list[str],
+    specs: list[str],
+    domains: list[str],
+    decisions: list[str],
+) -> None:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+        raise ValueError("changes/_template/design.md must contain YAML frontmatter")
+    raw_metadata, body = text[4:].split("\n---\n", 1)
+    metadata = yaml.safe_load(raw_metadata)
+    if not isinstance(metadata, dict):
+        raise ValueError("changes/_template/design.md frontmatter must be an object")
+    metadata.update(
+        {
+            "contract_version": 1,
+            "change": change_id,
+            "status": "draft",
+            "capabilities": list(dict.fromkeys(capabilities)),
+            "specs": list(dict.fromkeys(specs)),
+            "affected_domains": list(dict.fromkeys(domains)),
+            "decisions": list(dict.fromkeys(decisions)),
+            "open_questions": 0,
+        }
+    )
+    rendered = yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False, width=120).rstrip()
+    path.write_text(f"---\n{rendered}\n---\n\n{body.lstrip()}", encoding="utf-8")
 
 
 def main() -> int:
@@ -132,6 +165,7 @@ def main() -> int:
     metadata.update(
         {
             "version": 2,
+            "design_contract_version": 1,
             "id": change_id,
             "title": name,
             "change_type": args.change_type,
@@ -149,10 +183,17 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    specs = target / "specs"
-    specs.mkdir(exist_ok=True)
-    for scope in scopes:
-        write_spec_skeleton(specs / f"{scope}.md", change_id, scope)
+    specs_dir = target / "specs"
+    specs_dir.mkdir(exist_ok=True)
+    spec_ids = [write_spec_skeleton(specs_dir / f"{scope}.md", change_id, scope) for scope in scopes]
+    update_design_contract(
+        target / "design.md",
+        change_id,
+        args.capability,
+        spec_ids,
+        args.domain,
+        args.decision,
+    )
     (target / "evidence").mkdir(exist_ok=True)
 
     print(f"Created {target.relative_to(ROOT)}")
