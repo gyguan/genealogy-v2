@@ -78,7 +78,6 @@ def validate_domains() -> set[str]:
     contexts = data.get("contexts", []) if isinstance(data, dict) else []
     ids: set[str] = set()
     graph: dict[str, list[str]] = {}
-
     if not isinstance(contexts, list):
         fail("domains/context-map.yaml: contexts must be a list")
         return ids
@@ -94,7 +93,7 @@ def validate_domains() -> set[str]:
         if not isinstance(dependencies, list):
             fail(f"domains/context-map.yaml: {context_id}.dependencies must be a list")
             continue
-        seen_dependencies: set[tuple[str, str]] = set()
+        seen: set[tuple[str, str]] = set()
         for dependency in dependencies:
             target = dependency.get("target") if isinstance(dependency, dict) else None
             kind = dependency.get("type") if isinstance(dependency, dict) else None
@@ -104,9 +103,9 @@ def validate_domains() -> set[str]:
             if target == context_id:
                 fail(f"domains/context-map.yaml: {context_id} cannot depend on itself")
             key = (target, kind)
-            if key in seen_dependencies:
+            if key in seen:
                 fail(f"domains/context-map.yaml: duplicate dependency {context_id}->{target} ({kind})")
-            seen_dependencies.add(key)
+            seen.add(key)
             graph[context_id].append(target)
 
     for context_id, targets in graph.items():
@@ -151,7 +150,6 @@ def validate_domains() -> set[str]:
         metadata = frontmatter(domain_path)
         if metadata and metadata.get("id") not in ids:
             fail(f"{rel(domain_path)}: absent from domains/context-map.yaml")
-
     return ids
 
 
@@ -182,8 +180,8 @@ def validate_capability_ids() -> set[str]:
                 or capability_id in ids
             ):
                 fail(f"{rel(path)}: invalid or duplicate capability id {capability_id}")
-                continue
-            ids.add(capability_id)
+            else:
+                ids.add(capability_id)
     return ids
 
 
@@ -262,7 +260,6 @@ def validate_decisions(domain_ids: set[str]) -> tuple[set[str], dict[str, dict]]
             new_id not in ids or decision_id not in records[new_id].get("supersedes", [])
         ):
             fail(f"{decision_id}: invalid superseded_by link {new_id}")
-
     return ids, records
 
 
@@ -318,8 +315,7 @@ def validate_task_dependencies(change_dir: Path, tasks: list[dict[str, str]]) ->
         value = item.get("depends_on", "none").strip()
         if value.lower() in {"none", "n/a", "na", "-", ""}:
             continue
-        dependencies = [part.strip() for part in value.split(",") if part.strip()]
-        for dependency in dependencies:
+        for dependency in [part.strip() for part in value.split(",") if part.strip()]:
             if dependency == item["id"]:
                 fail(f"{rel(change_dir)}/tasks.md: {item['id']} cannot depend on itself")
             elif dependency not in task_ids:
@@ -509,8 +505,6 @@ def validate_change(
 
 def validate_skills() -> None:
     skills_root = ROOT / "skills"
-    if not skills_root.exists():
-        return
     names: set[str] = set()
     for directory in sorted(skills_root.iterdir()):
         if not directory.is_dir() or directory.name == "upstream":
@@ -549,6 +543,11 @@ def main() -> int:
         "domains/context-map.yaml",
         "changes/README.md",
         "changes/_template/change.yaml",
+        "changes/_template/proposal.md",
+        "changes/_template/design.md",
+        "changes/_template/tasks.md",
+        "changes/_template/specs",
+        "changes/_template/evidence",
         "decisions/README.md",
         "decisions/_template.md",
         "skills/README.md",
@@ -566,7 +565,7 @@ def main() -> int:
     domain_ids = validate_domains()
     capability_ids = validate_capability_ids()
     validate_glossary(domain_ids)
-    decision_ids, _ = validate_decisions(domain_ids)
+    decision_ids, decision_records = validate_decisions(domain_ids)
 
     seen_change_ids: set[str] = set()
     changes_root = ROOT / "changes"
@@ -574,6 +573,12 @@ def main() -> int:
         for path in sorted(changes_root.iterdir()):
             if path.is_dir() and path.name != "_template":
                 validate_change(path, domain_ids, capability_ids, decision_ids, seen_change_ids)
+
+    for decision_id, metadata in decision_records.items():
+        introduced_by = metadata.get("introduced_by")
+        if introduced_by not in seen_change_ids:
+            fail(f"{decision_id}: introduced_by references unknown Change {introduced_by}")
+
     validate_skills()
 
     if ERRORS:
