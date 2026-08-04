@@ -162,6 +162,31 @@ def visible_markdown(text: str) -> str:
     return _original_visible_markdown(_mask_raw_html_blocks("\n".join(normalized)))
 
 
+def validate_original_review_markers(change_dir) -> None:
+    """Reject template comments before structural masking hides them."""
+    change_path = change_dir / "change.yaml"
+    design_path = change_dir / "design.md"
+    if not change_path.is_file() or not design_path.is_file():
+        return
+    change = core.load_yaml(change_path)
+    if change is None or not core.is_version_one(
+        change.get("design_contract_version")
+    ):
+        return
+    metadata, body = core.read_design(design_path)
+    if metadata is None:
+        return
+    review_ready = (
+        change.get("status") in core.ACTIVE_STATES
+        or core.spec_gate_approved(change)
+    )
+    if review_ready and "<!--" in body:
+        core.fail(
+            f"{core.rel(design_path)}: review-ready design contains "
+            "forbidden HTML comment"
+        )
+
+
 def validate_linked_rows(
     path,
     section: str,
@@ -170,6 +195,23 @@ def validate_linked_rows(
 ) -> None:
     """Validate canonical definition rows whose first table cell is a tracked ID."""
     for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") and "|" in stripped:
+            first_cell = stripped.split("|", 1)[0].strip()
+            tracked_ids = sorted(
+                {
+                    tracked_id
+                    for prefix in _TRACKED_PREFIXES
+                    for tracked_id in core.exact_ids(first_cell, prefix)
+                }
+            )
+            if tracked_ids:
+                core.fail(
+                    f"{core.rel(path)}: definition row must use canonical "
+                    f"outer pipes: {tracked_ids[0]}"
+                )
+                continue
+
         cells = core.table_cells(line)
         if not cells:
             continue
@@ -318,6 +360,7 @@ def main() -> int:
     if changes_root.exists():
         for path in sorted(changes_root.iterdir()):
             if path.is_dir() and path.name != "_template":
+                validate_original_review_markers(path)
                 validate_test_registry(path)
                 core.validate_change(path)
     if core.ERRORS:
