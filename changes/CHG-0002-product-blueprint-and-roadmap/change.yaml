@@ -1,0 +1,42 @@
+version: 1
+id: CHG-0002
+title: product-blueprint-and-roadmap
+change_type: product
+status: completed
+
+issue:
+  repository: gyguan/genealogy-v2
+  number: null
+
+capabilities: []
+affected_domains:
+  - person-registry
+  - family-and-kinship
+  - lineage-organization
+  - source-and-evidence
+  - genealogy-project
+  - publication
+affected_decisions:
+  - DEC-0002
+  - DEC-0003
+  - DEC-0004
+  - DEC-0005
+
+gates:
+  spec_review:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T10:30:00+08:00
+    evidence: evidence/spec-review.md
+  implementation_approval:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T10:32:00+08:00
+    evidence: evidence/implementation-approval.md
+  release_approval:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T10:37:00+08:00
+    evidence: evidence/release-approval.md
+
+cancellation_reason: null
