@@ -1,9 +1,9 @@
 # Tasks
 
-每个任务使用 `## TASK-xxxx`，并维护以下字段：
+每个真实任务使用 `## TASK-xxxx`，并维护以下字段。下面示例故意使用三级标题，复制到真实任务时请提升为二级标题：
 
 ```markdown
-## TASK-0001 可验证纵向任务
+### TASK-0001 可验证纵向任务
 - Specs: SPEC-...
 - Status: planned
 - Depends on: none
