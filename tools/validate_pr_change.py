@@ -14,6 +14,7 @@ from diagnostics import Reporter
 
 ROOT = Path(__file__).resolve().parents[1]
 CHANGE_ID_PATTERN = re.compile(r"\bCHG-\d{4}\b")
+CHANGE_DECLARATION_PATTERN = re.compile(r"(?im)^-\s*Change IDs?\s*[:：]\s*(.+?)\s*$")
 
 
 def api(url: str, token: str):
@@ -44,7 +45,10 @@ def rest_pages(url: str, token: str) -> list[dict]:
 
 
 def extract_change_ids(body: str) -> set[str]:
-    return set(CHANGE_ID_PATTERN.findall(body or ""))
+    result: set[str] = set()
+    for declaration in CHANGE_DECLARATION_PATTERN.findall(body or ""):
+        result.update(CHANGE_ID_PATTERN.findall(declaration))
+    return result
 
 
 def resolve_change(root: Path, change_id: str) -> Path | None:
@@ -100,7 +104,10 @@ def validate_declared_scope(
 ) -> dict[str, dict]:
     change_ids = extract_change_ids(body)
     if not change_ids:
-        reporter.error("PR-BODY-001", "PR body must declare at least one CHG-xxxx identifier")
+        reporter.error(
+            "PR-BODY-001",
+            "PR body must declare at least one Change using '- Change ID：CHG-xxxx'",
+        )
         return {}
 
     metadata = {
