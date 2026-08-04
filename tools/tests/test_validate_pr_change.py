@@ -61,6 +61,13 @@ class PullRequestChangeValidationTests(unittest.TestCase):
         self.assertEqual({"domain"}, required_change_types("domains/person-registry.md"))
         self.assertEqual({"governance", "engineering"}, required_change_types("tools/check.py"))
 
+    def test_workflow_revalidates_edited_pull_request_body(self) -> None:
+        text = (ROOT / ".github/workflows/validate.yml").read_text(encoding="utf-8")
+        self.assertIn(
+            "types: [opened, synchronize, reopened, ready_for_review, edited]",
+            text,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
