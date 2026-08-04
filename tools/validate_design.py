@@ -13,6 +13,7 @@ _original_visible_markdown = core.visible_markdown
 _TRACKED_DEFINITION = re.compile(
     r"(RULE|INV|CMD|CONSTRAINT|SEC)-[A-Z0-9-]+"
 )
+_TRACKED_PREFIXES = ("RULE-", "INV-", "CMD-", "CONSTRAINT-", "SEC-")
 
 
 def visible_markdown(text: str) -> str:
@@ -38,12 +39,18 @@ def validate_linked_rows(
         if not cells:
             continue
         definition_id = cells[0]
-        tracked = _TRACKED_DEFINITION.search(definition_id)
+        tracked_ids = sorted(
+            {
+                tracked_id
+                for prefix in _TRACKED_PREFIXES
+                for tracked_id in core.exact_ids(definition_id, prefix)
+            }
+        )
         match = re.fullmatch(_TRACKED_DEFINITION, definition_id)
-        if tracked and not match:
+        if tracked_ids and not match:
             core.fail(
                 f"{core.rel(path)}: definition ID must be canonical plain text: "
-                f"{tracked.group(0)}"
+                f"{tracked_ids[0]}"
             )
             continue
         if not match:
