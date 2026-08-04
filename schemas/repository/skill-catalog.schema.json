@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["lifecycle", "authority", "skills"],
+  "properties": {
+    "lifecycle": {"type": "string"},
+    "authority": {"type": "string"},
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind", "invocation", "path"],
+        "properties": {
+          "name": {"type": "string"},
+          "kind": {"enum": ["workflow", "discipline", "validator"]},
+          "invocation": {"enum": ["user", "model"]},
+          "path": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["lifecycle", "authority", "capability_groups", "rules"],
+  "properties": {
+    "lifecycle": {"type": "string"},
+    "authority": {"type": "string"},
+    "capability_groups": {"type": "array"},
+    "rules": {"type": "array"}
+  },
+  "additionalProperties": false
+}

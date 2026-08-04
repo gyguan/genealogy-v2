@@ -1,12 +1,5 @@
 # 产品资产
 
-本目录回答：为什么做、为谁做、解决什么问题、提供哪些能力、如何分阶段交付。
+定义为什么做、为谁做、提供什么能力和如何判断成功。实现细节不属于本目录。
 
-正式产品资产包括：
-
-- `vision.md`
-- `positioning.md`
-- `capability-map.yaml`
-- `roadmap/`
-
-产品资产不定义数据库表、代码模块或具体 API 字段。
+权威入口：`vision.md`、`positioning.md`、`capability-map.yaml` 和 `roadmap/`。

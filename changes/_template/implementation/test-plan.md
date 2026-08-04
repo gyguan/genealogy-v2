@@ -1,15 +1,11 @@
 # Test Plan
 
-## 单元验证
-
-## 集成验证
-
-## 契约验证
-
-## 领域 Eval
-
-## 端到端验证
-
-## 安全与隐私验证
-
-## 回归范围
+## Approved seams
+## Red-green slices
+## Domain Eval
+## Contract tests
+## Integration tests
+## End-to-end tests
+## Security and privacy
+## Regression scope
+## Commands

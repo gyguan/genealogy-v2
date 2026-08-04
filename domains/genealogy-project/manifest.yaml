@@ -1,0 +1,21 @@
+id: genealogy-project
+name: 修谱项目
+lifecycle: draft
+authority: provisional
+responsibilities:
+  - 修谱届次、按户采丁、任务、审核、进度、冻结和交付协作
+non_responsibilities:
+  - 领域事实定义、谱书版式
+depends_on:
+  - lineage-organization
+  - person-registry
+consumed_by:
+  - publication
+sources:
+  overview: README.md
+  instructions: AGENTS.md
+  model: model/
+  rules: rules/
+  contracts: contracts/
+  evals: evals/
+code_roots: []

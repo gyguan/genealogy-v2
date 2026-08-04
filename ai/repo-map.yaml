@@ -1,11 +1,11 @@
 repository:
   name: genealogy-v2
-  stage: asset-baseline
+  stage: ai-engineering-baseline
   language: zh-CN
 
 read_first:
   - AGENTS.md
-  - docs/agents/skill-routing.md
+  - ai/routing/requirement-development.yaml
   - product/README.md
   - domains/README.md
   - domains/glossary.yaml
@@ -17,23 +17,21 @@ sources_of_truth:
   active_change: changes/active/
   decisions: decisions/
   verification: evals/
-  execution_skills: skills/engineering/
+  execution_skills: skills/catalog.yaml
   implementation_knowledge: knowledge/
+  repository_schemas: schemas/repository/
 
-skill_integration:
-  upstream_source: skills/upstream/mattpocock/source.yaml
-  requirement_route: ai/routing/requirement-development.yaml
-  context_pack: ai/context-packs/requirement-development.yaml
-  precedence: ai/policies/skill-precedence.md
+compatibility_only:
+  - docs/agents/
 
 reference_only:
   - reference/
   - skills/upstream/
 
 rules:
-  - read the active change context before modifying assets
+  - read change.yaml and context.md before modifying a non-trivial change
   - prefer the smallest sufficient context pack
-  - do not treat reference materials as approved requirements
-  - do not create new domain concepts without an approved change
-  - update verification assets with every behavior change
+  - canonical assets override provisional and reference assets
+  - update validation assets with every behavior change
   - project-adapted skills override upstream skills with the same name
+  - run tools/validate_repo.py before declaring completion

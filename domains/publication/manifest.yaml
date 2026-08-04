@@ -1,0 +1,22 @@
+id: publication
+name: 谱书出版
+lifecycle: draft
+authority: provisional
+responsibilities:
+  - 出版快照、谱书版本、章节、排版、校稿、印前检查和正式交付
+non_responsibilities:
+  - 自然人身份和亲属事实裁决
+depends_on:
+  - person-registry
+  - family-and-kinship
+  - lineage-organization
+  - source-and-evidence
+consumed_by: []
+sources:
+  overview: README.md
+  instructions: AGENTS.md
+  model: model/
+  rules: rules/
+  contracts: contracts/
+  evals: evals/
+code_roots: []

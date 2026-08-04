@@ -1,5 +1,3 @@
 # AI Routing
 
-定义任务分类、风险等级、Skill 选择和人工介入条件。
-
-路由规则不得包含具体领域事实；领域事实由 `domains/` 管理。
+机器可读路由是需求状态、风险和 Skill 选择的唯一事实源。`docs/agents/skill-routing.md` 仅是兼容说明。

@@ -1,0 +1,21 @@
+id: person-registry
+name: 人物身份
+lifecycle: draft
+authority: provisional
+responsibilities:
+  - 自然人稳定身份、姓名、历史姓名和人物档案
+non_responsibilities:
+  - 家庭关系、谱系组织、谱书版式
+depends_on: []
+consumed_by:
+  - family-and-kinship
+  - lineage-organization
+  - publication
+sources:
+  overview: README.md
+  instructions: AGENTS.md
+  model: model/
+  rules: rules/
+  contracts: contracts/
+  evals: evals/
+code_roots: []

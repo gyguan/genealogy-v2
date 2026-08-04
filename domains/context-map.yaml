@@ -1,18 +1,16 @@
-status: draft
-source_of_truth: true
-
+lifecycle: draft
+authority: provisional
 contexts:
   - id: person-registry
-    status: planned
+    lifecycle: planned
   - id: family-and-kinship
-    status: planned
+    lifecycle: planned
   - id: lineage-organization
-    status: planned
+    lifecycle: planned
   - id: source-and-evidence
-    status: planned
+    lifecycle: planned
   - id: genealogy-project
-    status: planned
+    lifecycle: planned
   - id: publication
-    status: planned
-
+    lifecycle: planned
 relationships: []

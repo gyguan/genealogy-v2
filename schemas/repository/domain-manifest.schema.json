@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "name", "lifecycle", "authority", "responsibilities", "non_responsibilities", "sources", "code_roots"],
+  "properties": {
+    "id": {"pattern": "^[a-z0-9-]+$"},
+    "name": {"type": "string"},
+    "lifecycle": {"enum": ["draft", "review", "approved", "superseded", "archived", "planned"]},
+    "authority": {"enum": ["canonical", "provisional", "reference", "generated"]},
+    "responsibilities": {"type": "array"},
+    "non_responsibilities": {"type": "array"},
+    "sources": {"type": "object"},
+    "code_roots": {"type": "array"}
+  },
+  "additionalProperties": true
+}

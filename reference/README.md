@@ -1,5 +1,3 @@
 # Reference
 
-本目录中的内容只作为输入和参考，不是正式需求或领域事实来源。
-
-研究结论被采用后，必须通过 Change 和 Decision 进入正式基线。
+非权威研究、模板和共享参考资产。任何内容都不能覆盖 product、domains、decisions 和批准 Change。

@@ -4,24 +4,25 @@ purpose: minimum context for requirement design and implementation
 required:
   - AGENTS.md
   - ai/repo-map.yaml
-  - docs/agents/domain.md
   - domains/glossary.yaml
   - domains/context-map.yaml
-  - changes/active/{change-id}/context.yaml
+  - changes/active/{change-id}/change.yaml
+  - changes/active/{change-id}/context.md
 
 conditional:
   product:
     - product/vision.md
     - product/capability-map.yaml
   affected_domains:
-    - domains/{domain}/README.md
+    - domains/{domain}/manifest.yaml
     - domains/{domain}/AGENTS.md
+    - domains/{domain}/README.md
     - domains/{domain}/model/
     - domains/{domain}/rules/
     - domains/{domain}/evals/
   implementation:
     - knowledge/curated/
-    - knowledge/extracted/
+    - knowledge/generated/
   decisions:
     - decisions/
 
