@@ -85,12 +85,33 @@ _COMPLETE_HTML_TAG = re.compile(
 
 
 def _mask_raw_html_blocks(text: str) -> str:
-    """Mask CommonMark raw HTML block types before Markdown validation."""
+    """Mask CommonMark raw HTML blocks without inspecting fenced examples."""
     masked: list[str] = []
     terminator: str | None = None
     until_blank = False
+    fence_char: str | None = None
+    fence_length = 0
 
     for line in text.splitlines():
+        if fence_char is not None:
+            masked.append(line)
+            closing = re.match(
+                rf"^[ \t]*{re.escape(fence_char)}{{{fence_length},}}[ \t]*$",
+                line,
+            )
+            if closing:
+                fence_char = None
+                fence_length = 0
+            continue
+
+        opening = re.match(r"^[ \t]*(`{3,}|~{3,})(.*)$", line)
+        if opening:
+            marker = opening.group(1)
+            fence_char = marker[0]
+            fence_length = len(marker)
+            masked.append(line)
+            continue
+
         if terminator is not None:
             masked.append("")
             if terminator.lower() in line.lower():
@@ -184,6 +205,46 @@ def validate_original_review_markers(change_dir) -> None:
         core.fail(
             f"{core.rel(design_path)}: review-ready design contains "
             "forbidden HTML comment"
+        )
+
+
+def validate_required_domain_definitions(change_dir) -> None:
+    """Require a required domain facet to use traceable RULE/INV rows."""
+    change_path = change_dir / "change.yaml"
+    design_path = change_dir / "design.md"
+    if not change_path.is_file() or not design_path.is_file():
+        return
+    change = core.load_yaml(change_path)
+    if change is None or not core.is_version_one(
+        change.get("design_contract_version")
+    ):
+        return
+    metadata, body = core.read_design(design_path)
+    if metadata is None:
+        return
+    review_ready = (
+        change.get("status") in core.ACTIVE_STATES
+        or core.spec_gate_approved(change)
+    )
+    applicability = metadata.get("applicability")
+    if (
+        not review_ready
+        or not isinstance(applicability, dict)
+        or applicability.get("domain_model") != "required"
+    ):
+        return
+
+    visible = core.visible_markdown(body)
+    domain_section = core.section_body(visible, "领域与数据影响") or ""
+    definitions: set[str] = set()
+    for line in domain_section.splitlines():
+        cells = core.table_cells(line)
+        if cells and re.fullmatch(r"(?:RULE|INV)-[A-Z0-9-]+", cells[0]):
+            definitions.add(cells[0])
+    if not definitions:
+        core.fail(
+            f"{core.rel(design_path)}: required facet domain_model needs a "
+            "canonical RULE/INV definition row with Spec and Test links"
         )
 
 
@@ -361,6 +422,7 @@ def main() -> int:
         for path in sorted(changes_root.iterdir()):
             if path.is_dir() and path.name != "_template":
                 validate_original_review_markers(path)
+                validate_required_domain_definitions(path)
                 validate_test_registry(path)
                 core.validate_change(path)
     if core.ERRORS:
