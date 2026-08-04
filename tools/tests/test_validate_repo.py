@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import unittest
 
 import yaml
@@ -47,6 +48,23 @@ class RepositoryValidationTests(unittest.TestCase):
         result = run(root, "tools/validate_repo.py")
         self.assertNotEqual(0, result.returncode)
         self.assertIn("no SPEC id found", result.stdout)
+
+    def test_decision_introduced_by_requires_existing_change(self) -> None:
+        root = copy_repo(self)
+        path = sorted((root / "decisions").glob("DEC-*.md"))[0]
+        text = path.read_text(encoding="utf-8")
+        text = re.sub(r"^introduced_by:\s*CHG-\d{4}\s*$", "introduced_by: CHG-9999", text, count=1, flags=re.M)
+        path.write_text(text, encoding="utf-8")
+        result = run(root, "tools/validate_repo.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("introduced_by references unknown Change CHG-9999", result.stdout)
+
+    def test_change_template_requires_all_generator_assets(self) -> None:
+        root = copy_repo(self)
+        (root / "changes/_template/design.md").unlink()
+        result = run(root, "tools/validate_repo.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("missing required file: changes/_template/design.md", result.stdout)
 
 
 if __name__ == "__main__":
