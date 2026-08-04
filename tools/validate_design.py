@@ -14,17 +14,152 @@ _TRACKED_DEFINITION = re.compile(
     r"(RULE|INV|CMD|CONSTRAINT|SEC)-[A-Z0-9-]+"
 )
 _TRACKED_PREFIXES = ("RULE-", "INV-", "CMD-", "CONSTRAINT-", "SEC-")
+_RAW_HTML_BLOCK_TAGS = {
+    "address",
+    "article",
+    "aside",
+    "base",
+    "basefont",
+    "blockquote",
+    "body",
+    "caption",
+    "center",
+    "col",
+    "colgroup",
+    "dd",
+    "details",
+    "dialog",
+    "dir",
+    "div",
+    "dl",
+    "dt",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "frame",
+    "frameset",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "head",
+    "header",
+    "hr",
+    "html",
+    "iframe",
+    "legend",
+    "li",
+    "link",
+    "main",
+    "menu",
+    "menuitem",
+    "nav",
+    "noframes",
+    "ol",
+    "optgroup",
+    "option",
+    "p",
+    "param",
+    "search",
+    "section",
+    "summary",
+    "table",
+    "tbody",
+    "td",
+    "tfoot",
+    "th",
+    "thead",
+    "title",
+    "tr",
+    "track",
+    "ul",
+}
+_RAW_HTML_UNTIL_CLOSE = {"pre", "script", "style", "textarea"}
+_COMPLETE_HTML_TAG = re.compile(
+    r"^</?[A-Za-z][A-Za-z0-9-]*(?:\s+[^<>]*?)?\s*/?>\s*$"
+)
+
+
+def _mask_raw_html_blocks(text: str) -> str:
+    """Mask CommonMark raw HTML block types before Markdown validation."""
+    masked: list[str] = []
+    terminator: str | None = None
+    until_blank = False
+
+    for line in text.splitlines():
+        if terminator is not None:
+            masked.append("")
+            if terminator.lower() in line.lower():
+                terminator = None
+            continue
+
+        if until_blank:
+            if not line.strip():
+                until_blank = False
+            masked.append("")
+            continue
+
+        match = re.match(r"^ {0,3}(.*)$", line)
+        candidate = match.group(1) if match else ""
+        lowered = candidate.lower()
+
+        if candidate.startswith("<!--"):
+            masked.append("")
+            if "-->" not in candidate[4:]:
+                terminator = "-->"
+            continue
+        if candidate.startswith("<?"):
+            masked.append("")
+            if "?>" not in candidate[2:]:
+                terminator = "?>"
+            continue
+        if candidate.startswith("<![CDATA["):
+            masked.append("")
+            if "]]>" not in candidate[9:]:
+                terminator = "]]>"
+            continue
+        if re.match(r"^<![A-Z]", candidate):
+            masked.append("")
+            if ">" not in candidate[2:]:
+                terminator = ">"
+            continue
+
+        tag_match = re.match(r"^</?([A-Za-z][A-Za-z0-9-]*)(?:\s|/?>|$)", candidate)
+        if tag_match:
+            tag = tag_match.group(1).lower()
+            if tag in _RAW_HTML_UNTIL_CLOSE:
+                masked.append("")
+                closing = f"</{tag}>"
+                if closing not in lowered:
+                    terminator = closing
+                continue
+            if tag in _RAW_HTML_BLOCK_TAGS:
+                masked.append("")
+                until_blank = True
+                continue
+            if _COMPLETE_HTML_TAG.fullmatch(candidate):
+                masked.append("")
+                until_blank = True
+                continue
+
+        masked.append(line)
+
+    return "\n".join(masked)
 
 
 def visible_markdown(text: str) -> str:
-    """Exclude block quotes before masking other Markdown code containers."""
+    """Exclude block quotes and all raw HTML blocks before Markdown parsing."""
     normalized: list[str] = []
     for line in text.splitlines():
         if re.match(r"^ {0,3}>", line):
             normalized.append("")
         else:
             normalized.append(line)
-    return _original_visible_markdown("\n".join(normalized))
+    return _original_visible_markdown(_mask_raw_html_blocks("\n".join(normalized)))
 
 
 def validate_linked_rows(
