@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
       - run: pip install pyyaml
       - run: python tools/check.py
-      - run: python tools/validate_pr_change.py
+      - run: python tools/validate_pr_change_strict.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
