@@ -18,8 +18,16 @@
 - 风险控制与 Change Profile 匹配：lightweight、standard、high-risk；
 - 产品、领域、安全必须 high-risk；治理不得 lightweight；
 - 使用 `new_change.py` 参数化生成，不手工复制模板；
+- 新 Change 默认使用 `quality_policy: strict`，并维护 `tests.yaml`；
 - Task 按可验证纵向行为拆分，使用最少可独立交付切片；
 - 统一执行 `python tools/check.py`。
+
+## 诊断与评审边界
+- Error 只用于客观、确定、可重复判断的错误，并阻断检查；
+- Warning 用于启发式风险和历史格式迁移，不直接替代 Reviewer 决策；
+- Review-only 用于业务正确性、领域语义、方案取舍、风险接受和测试充分性；
+- 不得为了自动化而让 Python、规则扫描或 LLM 自动裁决 Review-only 问题；
+- Warning 必须在评审中解决或明确接受，高风险 Change 仍需独立人类 APPROVED。
 
 ## 产品规划纪律
 - Release 事实源为 `product/releases.yaml`；Capability 唯一事实源为分组文件；

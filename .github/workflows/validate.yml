@@ -2,6 +2,7 @@ name: Repository Validation
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
   pull_request_review:
     types: [submitted, dismissed]
   push:
@@ -9,6 +10,8 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
+  issues: read
 
 jobs:
   repository-validation:
@@ -20,3 +23,7 @@ jobs:
           python-version: '3.12'
       - run: pip install pyyaml
       - run: python tools/check.py
+      - run: python tools/validate_pr_change_strict.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
