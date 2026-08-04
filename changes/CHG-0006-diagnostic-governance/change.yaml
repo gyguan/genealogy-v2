@@ -4,7 +4,7 @@ title: diagnostic-governance
 change_type: governance
 change_profile: standard
 quality_policy: strict
-status: implementing
+status: completed
 issue:
   repository: gyguan/genealogy-v2
   number: 10
@@ -27,10 +27,10 @@ gates:
     reference: issue-10
     evidence: evidence/implementation-approval.md
   release_approval:
-    status: blocked
-    approved_by: null
-    approved_at: null
-    source: null
-    reference: null
-    evidence: null
+    status: approved
+    approved_by: gyguan
+    approved_at: '2026-08-04T08:18:00Z'
+    source: github-pull-request
+    reference: pr-11
+    evidence: evidence/release-approval.md
 cancellation_reason: null
