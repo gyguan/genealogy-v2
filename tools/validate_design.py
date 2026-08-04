@@ -88,6 +88,79 @@ _RAW_PLACEHOLDER = re.compile(
 )
 
 
+def _update_list_stack(line: str, list_stack: list[tuple[int, int]]) -> int:
+    leading = core.indent_width(line)
+    list_item = re.match(r"^([ \t]*)([-+*]|\d+[.)])([ \t]+)", line)
+    if list_item:
+        item_indent = core.indent_width(list_item.group(1))
+        valid_item = item_indent <= 3 or any(
+            content <= item_indent for _, content in list_stack
+        )
+        if valid_item:
+            while list_stack and item_indent <= list_stack[-1][0]:
+                list_stack.pop()
+            content_indent = (
+                item_indent
+                + len(list_item.group(2))
+                + max(1, core.indent_width(list_item.group(3)))
+            )
+            list_stack.append((item_indent, content_indent))
+    return leading
+
+
+def _relative_container_base(
+    leading: int,
+    list_stack: list[tuple[int, int]],
+) -> int | None:
+    if leading <= 3:
+        return 0
+    active_content = max(
+        (content for _, content in list_stack if content <= leading),
+        default=None,
+    )
+    if active_content is not None and leading - active_content <= 3:
+        return active_content
+    return None
+
+
+def _mask_block_quotes(text: str) -> str:
+    """Mask block quotes at document or list-container indentation."""
+    masked: list[str] = []
+    fence_char: str | None = None
+    fence_length = 0
+    list_stack: list[tuple[int, int]] = []
+
+    for line in text.splitlines():
+        if fence_char is not None:
+            masked.append(line)
+            closing = re.match(
+                rf"^[ \t]*{re.escape(fence_char)}{{{fence_length},}}[ \t]*$",
+                line,
+            )
+            if closing:
+                fence_char = None
+                fence_length = 0
+            continue
+
+        opening = re.match(r"^[ \t]*(`{3,}|~{3,})(.*)$", line)
+        if opening:
+            marker = opening.group(1)
+            fence_char = marker[0]
+            fence_length = len(marker)
+            masked.append(line)
+            continue
+
+        leading = _update_list_stack(line, list_stack)
+        base = _relative_container_base(leading, list_stack)
+        candidate = line.lstrip(" \t") if base is not None else ""
+        if candidate.startswith(">"):
+            masked.append("")
+        else:
+            masked.append(line)
+
+    return "\n".join(masked)
+
+
 def _mask_raw_html_blocks(text: str) -> str:
     """Mask CommonMark raw HTML blocks while preserving fenced examples."""
     masked: list[str] = []
@@ -129,31 +202,9 @@ def _mask_raw_html_blocks(text: str) -> str:
             masked.append("")
             continue
 
-        leading = core.indent_width(line)
-        list_item = re.match(r"^([ \t]*)([-+*]|\d+[.)])([ \t]+)", line)
-        if list_item:
-            item_indent = core.indent_width(list_item.group(1))
-            valid_item = item_indent <= 3 or any(
-                content <= item_indent for _, content in list_stack
-            )
-            if valid_item:
-                while list_stack and item_indent <= list_stack[-1][0]:
-                    list_stack.pop()
-                content_indent = (
-                    item_indent
-                    + len(list_item.group(2))
-                    + max(1, core.indent_width(list_item.group(3)))
-                )
-                list_stack.append((item_indent, content_indent))
-
-        active_content = max(
-            (content for _, content in list_stack if content <= leading),
-            default=None,
-        )
-        html_base_allowed = leading <= 3 or (
-            active_content is not None and leading - active_content <= 3
-        )
-        candidate = line.lstrip(" \t") if html_base_allowed else ""
+        leading = _update_list_stack(line, list_stack)
+        base = _relative_container_base(leading, list_stack)
+        candidate = line.lstrip(" \t") if base is not None else ""
         lowered = candidate.lower()
 
         if candidate.startswith("<!--"):
@@ -201,14 +252,43 @@ def _mask_raw_html_blocks(text: str) -> str:
 
 
 def visible_markdown(text: str) -> str:
-    """Exclude block quotes and all raw HTML blocks before Markdown parsing."""
-    normalized: list[str] = []
-    for line in text.splitlines():
-        if re.match(r"^ {0,3}>", line):
-            normalized.append("")
-        else:
-            normalized.append(line)
-    return _original_visible_markdown(_mask_raw_html_blocks("\n".join(normalized)))
+    """Exclude quotes, raw HTML and code containers before validation."""
+    without_quotes = _mask_block_quotes(text)
+    without_html = _mask_raw_html_blocks(without_quotes)
+    return _original_visible_markdown(without_html)
+
+
+def table_data_rows(section: str) -> list[list[str]]:
+    """Return rows only from real outer-pipe Markdown tables."""
+    lines = section.splitlines()
+    rows: list[list[str]] = []
+    index = 0
+    while index + 1 < len(lines):
+        header = core.table_cells(lines[index])
+        separator = core.table_cells(lines[index + 1])
+        if (
+            not header
+            or not separator
+            or not core.table_separator(lines[index + 1])
+            or len(header) != len(separator)
+        ):
+            index += 1
+            continue
+
+        row_index = index + 2
+        while row_index < len(lines):
+            if not lines[row_index].strip():
+                break
+            cells = core.table_cells(lines[row_index])
+            if not cells or core.table_separator(lines[row_index]):
+                break
+            if len(cells) != len(header):
+                break
+            if any(cells):
+                rows.append(cells)
+            row_index += 1
+        index = max(row_index, index + 2)
+    return rows
 
 
 def validate_original_review_markers(change_dir) -> None:
@@ -275,11 +355,11 @@ def validate_required_definition_facets(change_dir) -> None:
         if applicability.get(facet) != "required":
             continue
         section = core.section_body(visible, title) or ""
-        definitions: set[str] = set()
-        for line in section.splitlines():
-            cells = core.table_cells(line)
-            if cells and re.fullmatch(pattern, cells[0]):
-                definitions.add(cells[0])
+        definitions = {
+            cells[0]
+            for cells in core.table_data_rows(section)
+            if cells and re.fullmatch(pattern, cells[0])
+        }
         if not definitions:
             core.fail(
                 f"{core.rel(design_path)}: required facet {facet} needs a "
@@ -293,9 +373,13 @@ def validate_linked_rows(
     existing_specs: set[str],
     declared_tests: set[str],
 ) -> None:
-    """Validate canonical definition rows whose first table cell is a tracked ID."""
+    """Validate tracked definitions only as rows in real Markdown tables."""
+    valid_rows = {tuple(cells) for cells in core.table_data_rows(section)}
+
     for line in section.splitlines():
         stripped = line.strip()
+        if not stripped:
+            continue
         if not stripped.startswith("|") and "|" in stripped:
             first_cell = stripped.split("|", 1)[0].strip()
             tracked_ids = sorted(
@@ -310,11 +394,33 @@ def validate_linked_rows(
                     f"{core.rel(path)}: definition row must use canonical "
                     f"outer pipes: {tracked_ids[0]}"
                 )
-                continue
+            continue
 
         cells = core.table_cells(line)
-        if not cells:
+        if cells:
+            first_cell = cells[0]
+            tracked_ids = sorted(
+                {
+                    tracked_id
+                    for prefix in _TRACKED_PREFIXES
+                    for tracked_id in core.exact_ids(first_cell, prefix)
+                }
+            )
+            if tracked_ids and tuple(cells) not in valid_rows:
+                core.fail(
+                    f"{core.rel(path)}: definition row must belong to a "
+                    f"Markdown table: {tracked_ids[0]}"
+                )
             continue
+
+        leading_definition = re.match(_TRACKED_DEFINITION, stripped)
+        if leading_definition:
+            core.fail(
+                f"{core.rel(path)}: definition {leading_definition.group(0)} "
+                "must use a canonical Markdown table row"
+            )
+
+    for cells in core.table_data_rows(section):
         definition_id = cells[0]
         tracked_ids = sorted(
             {
@@ -333,9 +439,10 @@ def validate_linked_rows(
         if not match:
             continue
 
+        row_text = " | ".join(cells)
         kind = match.group(1)
-        spec_references = core.exact_ids(line, "SPEC-")
-        test_references = core.exact_ids(line, "TEST-")
+        spec_references = core.exact_ids(row_text, "SPEC-")
+        test_references = core.exact_ids(row_text, "TEST-")
         unknown_specs = sorted(spec_references - existing_specs)
         unknown_tests = sorted(test_references - declared_tests)
         if unknown_specs:
@@ -355,8 +462,8 @@ def validate_linked_rows(
         if kind == "CMD" and (
             not spec_references
             or not test_references
-            or not core.exact_ids(line, "PERM-")
-            or not core.exact_ids(line, "ERR-")
+            or not core.exact_ids(row_text, "PERM-")
+            or not core.exact_ids(row_text, "ERR-")
         ):
             core.fail(f"{core.rel(path)}: every CMD row must link SPEC, TEST, PERM and ERR")
         if kind in {"CONSTRAINT", "SEC"} and not test_references:
@@ -434,7 +541,25 @@ def validate_test_registry(change_dir) -> None:
         if not cells or not re.fullmatch(r"SPEC-[A-Z0-9-]+", cells[0]):
             continue
         spec_id = cells[0]
-        test_references = core.exact_ids(" | ".join(cells[1:]), "TEST-")
+        if len(cells) != 5:
+            core.fail(
+                f"{core.rel(design_path)}: Spec traceability row {spec_id} "
+                "must contain exactly five columns"
+            )
+            continue
+        test_references = core.exact_ids(cells[4], "TEST-")
+        if not test_references:
+            core.fail(
+                f"{core.rel(design_path)}: Spec traceability row {spec_id} "
+                "must link at least one Test in the Test column"
+            )
+            continue
+        unknown_tests = sorted(test_references - registry_tests)
+        if unknown_tests:
+            core.fail(
+                f"{core.rel(design_path)}: Spec traceability row {spec_id} "
+                f"references unregistered Test(s): {', '.join(unknown_tests)}"
+            )
         wrong_coverage = sorted(
             test_id
             for test_id in test_references
@@ -450,6 +575,7 @@ def validate_test_registry(change_dir) -> None:
 
 
 core.visible_markdown = visible_markdown
+core.table_data_rows = table_data_rows
 core.validate_linked_rows = validate_linked_rows
 
 
