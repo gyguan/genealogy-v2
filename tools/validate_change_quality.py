@@ -33,6 +33,7 @@ DESIGN_SECTIONS = (
     "备选方案与权衡",
 )
 PLACEHOLDER_PATTERN = re.compile(r"(?i)(?:\bTBD\b|\bTODO\b|待补充|待完善|稍后补充)")
+PLACEHOLDER_ONLY = {"tbd", "todo", "待补充", "待完善", "稍后补充"}
 SPEC_PATTERN = re.compile(r"^#{2,3}\s+(SPEC-[A-Z0-9-]+)(?:\s+.*?)?$", re.M)
 SCENARIO_PATTERN = re.compile(r"^####\s+Scenario\s+(SCN-[A-Z0-9-]+)(?:\s+.*?)?$", re.M)
 TASK_PATTERN = re.compile(r"^##\s+(TASK-[A-Z0-9-]+)(?:\s+.*?)?$", re.M)
@@ -71,6 +72,12 @@ def meaningful(value: str) -> bool:
     return bool(value)
 
 
+def placeholder_only(value: str) -> bool:
+    value = re.sub(r"<!--.*?-->", "", value, flags=re.S)
+    normalized = re.sub(r"[^\w]+", "", value, flags=re.UNICODE).lower()
+    return normalized in PLACEHOLDER_ONLY
+
+
 def validate_required_sections(
     path: Path,
     required: tuple[str, ...],
@@ -87,7 +94,8 @@ def validate_required_sections(
         if title not in sections:
             reporter.error("CHG-DOC-002", f"missing section ## {title}", rel(path))
             continue
-        if not meaningful(sections[title]):
+        content = sections[title]
+        if not meaningful(content):
             if strict:
                 reporter.error("CHG-DOC-003", f"section ## {title} has no meaningful content", rel(path))
             else:
@@ -97,15 +105,21 @@ def validate_required_sections(
                     rel(path),
                 )
             continue
-        if PLACEHOLDER_PATTERN.search(sections[title]):
+        if placeholder_only(content):
             if strict:
-                reporter.error("CHG-DOC-004", f"section ## {title} contains placeholder content", rel(path))
+                reporter.error("CHG-DOC-004", f"section ## {title} is only placeholder content", rel(path))
             else:
                 reporter.warning(
                     "CHG-MIGRATION-003",
-                    f"legacy section ## {title} contains placeholder content",
+                    f"legacy section ## {title} is only placeholder content",
                     rel(path),
                 )
+        elif PLACEHOLDER_PATTERN.search(content):
+            reporter.warning(
+                "CHG-CONTENT-001",
+                f"section ## {title} mentions a placeholder token; reviewer must determine whether it is literal prose or unfinished work",
+                rel(path),
+            )
 
 
 def split_blocks(pattern: re.Pattern[str], text: str) -> list[tuple[re.Match[str], str]]:
@@ -261,16 +275,24 @@ def load_test_registry(
         if test_id in registry:
             reporter.error("TEST-ID-002", f"duplicate test id {test_id}", rel(path))
             continue
-        registry[test_id] = item
-        if not isinstance(item.get("command"), str) or not item["command"].strip():
-            reporter.error("TEST-COMMAND-001", f"{test_id} needs a command", rel(path))
-        specs = item.get("specs", [])
-        if not isinstance(specs, list) or not specs:
-            reporter.error("TEST-TRACE-001", f"{test_id} needs Specs", rel(path))
+
+        normalized = dict(item)
+        specs = item.get("specs")
+        if (
+            not isinstance(specs, list)
+            or not specs
+            or any(not isinstance(spec_id, str) for spec_id in specs)
+        ):
+            reporter.error("TEST-TRACE-001", f"{test_id} needs a list of Spec IDs", rel(path))
+            normalized["specs"] = []
         else:
+            normalized["specs"] = list(specs)
             for spec_id in specs:
                 if spec_id not in known_specs:
                     reporter.error("TEST-TRACE-002", f"{test_id} references unknown Spec {spec_id}", rel(path))
+        if not isinstance(item.get("command"), str) or not item["command"].strip():
+            reporter.error("TEST-COMMAND-001", f"{test_id} needs a command", rel(path))
+        registry[test_id] = normalized
     return registry
 
 
@@ -290,7 +312,7 @@ def validate_traceability(
     test_spec_coverage: set[str] = set()
 
     for item in registry.values():
-        test_spec_coverage.update(value for value in item.get("specs", []) if isinstance(value, str))
+        test_spec_coverage.update(item.get("specs", []))
 
     for task in tasks:
         task_id = task["id"]
@@ -301,9 +323,10 @@ def validate_traceability(
                     reporter.error("TASK-FIELD-001", f"{task_id} needs {field}", rel(tasks_path))
         if status == "cancelled":
             continue
-        for spec_id in csv_values(task.get("Specs")):
-            if spec_id in spec_ids:
-                task_spec_coverage.add(spec_id)
+
+        task_specs = set(csv_values(task.get("Specs")))
+        valid_task_specs = task_specs & spec_ids
+        task_spec_coverage.update(valid_task_specs)
         for scenario_id in csv_values(task.get("Acceptance")):
             if scenario_id not in scenario_ids and strict:
                 reporter.error(
@@ -313,15 +336,27 @@ def validate_traceability(
                 )
             else:
                 task_scenario_coverage.add(scenario_id)
+
+        referenced_test_specs: set[str] = set()
         if strict or registry_path_exists:
             for test_id in csv_values(task.get("Tests")):
-                if test_id not in registry:
+                record = registry.get(test_id)
+                if record is None:
                     code = "TASK-TEST-001" if strict else "TASK-TEST-002"
                     message = f"{task_id} references unknown Test {test_id}"
                     if strict:
                         reporter.error(code, message, rel(tasks_path))
                     else:
                         reporter.warning(code, message, rel(tasks_path))
+                    continue
+                referenced_test_specs.update(record.get("specs", []))
+        if strict:
+            for spec_id in sorted(valid_task_specs - referenced_test_specs):
+                reporter.error(
+                    "TASK-TEST-TRACE-001",
+                    f"{task_id} references no Test covering {spec_id}",
+                    rel(tasks_path),
+                )
 
     for spec_id in sorted(spec_ids - task_spec_coverage):
         if strict:
