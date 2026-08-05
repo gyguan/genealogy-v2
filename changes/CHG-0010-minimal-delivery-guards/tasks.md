@@ -2,7 +2,7 @@
 
 ## TASK-GOV-MIN-001 执行当前 Change 注册测试
 - Specs: SPEC-GOV-MIN-001
-- Status: in-progress
+- Status: completed
 - Depends on: none
 - Tests: TEST-GOV-MIN-001, TEST-GOV-MIN-SEC-001, TEST-GOV-MIN-TRACE-001
 - Evidence: evidence/TASK-GOV-MIN-001.md
@@ -13,7 +13,7 @@
 
 ## TASK-GOV-MIN-002 精确校验正式资产影响范围
 - Specs: SPEC-GOV-MIN-002
-- Status: in-progress
+- Status: completed
 - Depends on: none
 - Tests: TEST-GOV-MIN-002, TEST-GOV-MIN-TRACE-001
 - Evidence: evidence/TASK-GOV-MIN-002.md
@@ -24,7 +24,7 @@
 
 ## TASK-GOV-MIN-003 阻断评审态模板占位 ID
 - Specs: SPEC-GOV-MIN-003
-- Status: in-progress
+- Status: completed
 - Depends on: none
 - Tests: TEST-GOV-MIN-003, TEST-GOV-MIN-TRACE-001
 - Evidence: evidence/TASK-GOV-MIN-003.md
@@ -35,7 +35,7 @@
 
 ## TASK-GOV-MIN-004 对 high-risk 增加人类批准
 - Specs: SPEC-GOV-MIN-004
-- Status: in-progress
+- Status: completed
 - Depends on: none
 - Tests: TEST-GOV-MIN-004, TEST-GOV-MIN-SEC-001, TEST-GOV-MIN-TRACE-001
 - Evidence: evidence/TASK-GOV-MIN-004.md
@@ -46,7 +46,7 @@
 
 ## TASK-GOV-MIN-005 简化 Release 单 PR 收口
 - Specs: SPEC-GOV-MIN-005
-- Status: in-progress
+- Status: completed
 - Depends on: TASK-GOV-MIN-001, TASK-GOV-MIN-002, TASK-GOV-MIN-003, TASK-GOV-MIN-004
 - Tests: TEST-GOV-MIN-005, TEST-GOV-MIN-TRACE-001
 - Evidence: evidence/TASK-GOV-MIN-005.md
