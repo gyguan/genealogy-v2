@@ -24,9 +24,13 @@ open_questions: 0
 
 # Design
 
-> 设计先填写 Frontmatter，再填写正文。`required` 项必须使用稳定 ID 给出可验证设计；`not-applicable` 项必须在对应章节写明 `N/A: <facet> - <具体原因>`。进入评审前删除所有注释、TODO、TBD 和待确认占位。
+> `design.yaml` 是范围、事实、假设、适用性、稳定 ID 和 Spec/Test 追踪的机器事实源；本文只解释方案及取舍。先完成机器契约，再按其中的定义 ID 编写八个固定章节。进入评审前删除所有注释、TODO、TBD 和待确认占位。
 
 ## 方案概览
+
+### 事实、假设与开放问题
+
+<!-- 只引用 design.yaml 中的 FACT-...、ASM-...、OPEN-...，不要在正文静默新增事实或假设。 -->
 
 ### 约束与禁止事项
 
@@ -48,14 +52,14 @@ open_questions: 0
 | ID | 类型 | 设计内容 | 执行位置 | 关联 Spec | 验证测试 |
 |---|---|---|---|---|---|
 
-<!-- MODEL-...、RULE-...、INV-... 必须指向 SPEC-... 和 TEST-...。 -->
+<!-- MODEL-...、RULE-...、INV-... 必须与 design.yaml definitions 一致。 -->
 
 ### 数据结构与完整性
 
 | ID | 对象/约束 | 类型或结构 | 完整性保护 | 敏感级别 | 验证测试 |
 |---|---|---|---|---|---|
 
-<!-- 持久化适用时使用 DATA-... 或 CONSTRAINT-...；否则写 N/A: persistence - 原因。 -->
+<!-- 持久化适用时使用 DATA-... 或 CONSTRAINT-...；否则解释机器契约中的不适用结论。 -->
 
 ## 接口与模块边界
 
@@ -71,21 +75,21 @@ open_questions: 0
 | Command ID | 输入 | 前置条件/Guard | 状态结果 | 权限 | 失败码 | Spec | Test |
 |---|---|---|---|---|---|---|---|
 
-<!-- 状态机适用时使用 CMD-...、STATE-...、PERM-...、ERR-...；否则写 N/A: state_machine - 原因。 -->
+<!-- 状态机适用时使用 CMD-...、STATE-...、PERM-...、ERR-...。 -->
 
 ### API、事件与页面契约
 
 | ID | 类型 | 输入/触发 | 输出/结果 | 错误/版本策略 | Spec | Test |
 |---|---|---|---|---|---|---|
 
-<!-- 分别使用 API-...、EVENT-...、UI-...；不适用时逐项写 N/A: external_api/ui/events - 原因。 -->
+<!-- 分别使用 API-...、EVENT-...、UI-...；不适用时解释机器契约中的原因。 -->
 
 ## 安全与隐私
 
 | SEC ID | 风险或约束 | 防护措施 | 数据范围/敏感字段 | 审计 | Test |
 |---|---|---|---|---|---|
 
-<!-- 安全与隐私默认为 required；至少包含一个 SEC-... 和对应 TEST-...。 -->
+<!-- 安全与隐私默认为 required；至少包含一个与 design.yaml 一致的 SEC-...。 -->
 
 ## 测试 Seam
 
@@ -103,7 +107,7 @@ open_questions: 0
 | Spec ID | Flow/Use Case | Rule/Invariant | Command/Contract | Test |
 |---|---|---|---|---|
 
-<!-- Frontmatter 中的每个 Spec ID 必须在本矩阵出现。 -->
+<!-- 本表用于人工阅读；正式追踪关系以 design.yaml traceability 与 tests.yaml 为准。 -->
 
 ## 失败、补偿与回滚
 
@@ -118,13 +122,13 @@ open_questions: 0
 
 ## 迁移方案
 
-<!-- 适用时使用 MIG-... 描述迁移、兼容、校验和回退；否则写 N/A: migration - 原因。 -->
+<!-- 适用时使用 MIG-... 描述迁移、兼容、校验和回退。 -->
 
 ## 备选方案与权衡
 
 ### 非功能设计
 
-<!-- 性能适用时使用 NFR-...；否则写 N/A: performance - 原因。 -->
+<!-- 性能适用时使用 NFR-...。 -->
 
 ### 方案权衡
 
@@ -138,4 +142,4 @@ open_questions: 0
 
 ### 开放问题
 
-<!-- 每个未解决问题使用 OPEN-...；数量必须与 Frontmatter 的 open_questions 一致。批准 Spec Gate 前必须为 0。 -->
+<!-- 只展开 design.yaml 中的 OPEN-...；批准 Spec Gate 前必须为空。 -->
