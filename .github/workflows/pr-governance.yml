@@ -3,10 +3,11 @@ name: PR Governance
 on:
   pull_request_target:
     types: [edited]
-  pull_request_review:
-    types: [submitted, dismissed]
   issue_comment:
     types: [created, edited]
+  workflow_run:
+    workflows: [Repository Validation]
+    types: [completed]
 
 permissions:
   contents: read
@@ -18,13 +19,16 @@ jobs:
   pr-governance:
     if: >-
       github.event_name == 'pull_request_target' ||
-      github.event_name == 'pull_request_review' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.pull_requests[0] != null) ||
       (github.event.issue.pull_request != null && startsWith(github.event.comment.body, '@codex review'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -32,8 +36,8 @@ jobs:
       - run: python tools/validate_pr.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.workflow_run.pull_requests[0].number || github.event.issue.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.workflow_run.pull_requests[0].head.sha || '' }}
           GITHUB_COMMENT_BODY: ${{ github.event.comment.body || '' }}
           WAIT_FOR_REACTION_SECONDS: ${{ github.event_name == 'issue_comment' && '300' || '0' }}
           REVIEW_POLL_SECONDS: '10'
