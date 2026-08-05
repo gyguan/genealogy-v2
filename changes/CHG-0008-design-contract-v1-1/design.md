@@ -1,7 +1,7 @@
 ---
 contract_version: 1
 change: CHG-0008
-status: review
+status: approved
 capabilities: []
 specs:
   - SPEC-GOV-V11-001
