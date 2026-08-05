@@ -101,6 +101,8 @@ N/A: events - 本 Change 不新增领域事件或消息契约。
 
 公共 Seam 为 `python tools/validate_design_machine.py`、`python tools/context.py CHG-0008 --bundle` 和 `python tools/check.py` 的退出码与结构化输出。合法仓库返回0，反例返回非0并包含稳定错误关键词。
 
+TRACE-GOV-V11-001：所有正式 Spec 必须由 `design.yaml` Definition、Traceability 与 `tests.yaml` 注册覆盖形成双向一致的机器链路。
+
 ### 测试清单
 
 | TEST ID | 类型 | 验证内容 | Seam | 关联规则/不变量/契约 |
@@ -111,16 +113,17 @@ N/A: events - 本 Change 不新增领域事件或消息契约。
 | TEST-DESIGN-V11-004 | 正向 | Context Pack可机器读取 | context.py --bundle | SPEC-GOV-V11-004 |
 | TEST-DESIGN-V11-005 | 回归 | legacy v1与v1.1统一检查通过 | tools/check.py | SPEC-GOV-V11-001、SPEC-GOV-V11-004、SPEC-GOV-V11-005 |
 | TEST-DESIGN-V11-SEC-001 | 安全 | FACT/ASM/OPEN和Test注册表门禁 | validate_design_machine.py | SEC-GOV-V11-001 |
+| TEST-DESIGN-V11-TRACE-001 | 追踪 | 全部正式Spec的机器Definition与注册测试双向覆盖 | tools/check.py | TRACE-GOV-V11-001 |
 
 ### Spec 追踪矩阵
 
 | Spec ID | Flow/Use Case | Rule/Invariant | Command/Contract | Test |
 |---|---|---|---|---|
-| SPEC-GOV-V11-001 | FLOW-GOV-V11-001 | DESIGN-GOV-V11-001 | Machine Design Contract | TEST-DESIGN-V11-001、TEST-DESIGN-V11-002、TEST-DESIGN-V11-005 |
-| SPEC-GOV-V11-002 | UC-GOV-V11-001 | SEC-GOV-V11-001 | Fact/Assumption/Open Contract | TEST-DESIGN-V11-003、TEST-DESIGN-V11-SEC-001 |
-| SPEC-GOV-V11-003 | UC-GOV-V11-001 | DESIGN-GOV-V11-002 | Facet Contract | TEST-DESIGN-V11-002、TEST-DESIGN-V11-003 |
-| SPEC-GOV-V11-004 | FLOW-GOV-V11-001 | DESIGN-GOV-V11-003 | Context/Review Contract | TEST-DESIGN-V11-004、TEST-DESIGN-V11-005 |
-| SPEC-GOV-V11-005 | FLOW-GOV-V11-001 | DESIGN-GOV-V11-001 | Traceability Contract | TEST-DESIGN-V11-001、TEST-DESIGN-V11-005、TEST-DESIGN-V11-SEC-001 |
+| SPEC-GOV-V11-001 | FLOW-GOV-V11-001 | DESIGN-GOV-V11-001 | Machine Design Contract | TEST-DESIGN-V11-001、TEST-DESIGN-V11-002、TEST-DESIGN-V11-005、TEST-DESIGN-V11-TRACE-001 |
+| SPEC-GOV-V11-002 | UC-GOV-V11-001 | SEC-GOV-V11-001 | Fact/Assumption/Open Contract | TEST-DESIGN-V11-003、TEST-DESIGN-V11-SEC-001、TEST-DESIGN-V11-TRACE-001 |
+| SPEC-GOV-V11-003 | UC-GOV-V11-001 | DESIGN-GOV-V11-002 | Facet Contract | TEST-DESIGN-V11-002、TEST-DESIGN-V11-003、TEST-DESIGN-V11-TRACE-001 |
+| SPEC-GOV-V11-004 | FLOW-GOV-V11-001 | DESIGN-GOV-V11-003 | Context/Review Contract | TEST-DESIGN-V11-004、TEST-DESIGN-V11-005、TEST-DESIGN-V11-TRACE-001 |
+| SPEC-GOV-V11-005 | FLOW-GOV-V11-001 | TRACE-GOV-V11-001 | Traceability Contract | TEST-DESIGN-V11-001、TEST-DESIGN-V11-005、TEST-DESIGN-V11-SEC-001、TEST-DESIGN-V11-TRACE-001 |
 
 ## 失败、补偿与回滚
 
