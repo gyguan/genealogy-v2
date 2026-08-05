@@ -7,6 +7,7 @@ import re
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -52,9 +53,24 @@ def extract_change_ids(body: str) -> set[str]:
     return result
 
 
-def changed_file_paths(files: list[dict]) -> list[str]:
-    paths: list[str] = []
+def normalize_changed_files(files: list[dict] | list[str]) -> list[dict[str, Any]]:
+    """Keep GitHub file metadata while retaining compatibility with path-only tests."""
+    result: list[dict[str, Any]] = []
     for item in files:
+        if isinstance(item, str):
+            result.append({"filename": item, "status": "modified"})
+            continue
+        if not isinstance(item, dict):
+            continue
+        filename = item.get("filename")
+        if isinstance(filename, str):
+            result.append(dict(item))
+    return result
+
+
+def changed_file_paths(files: list[dict] | list[str]) -> list[str]:
+    paths: list[str] = []
+    for item in normalize_changed_files(files):
         filename = item.get("filename")
         if isinstance(filename, str):
             paths.append(filename)
@@ -115,9 +131,14 @@ def load_change_metadata(root: Path, change_id: str, reporter: Reporter) -> dict
 def validate_declared_scope(
     root: Path,
     body: str,
-    changed_files: list[str],
+    changed_files: list[dict] | list[str],
     reporter: Reporter,
+    *,
+    repo: str | None = None,
+    token: str | None = None,
+    base_sha: str | None = None,
 ) -> dict[str, dict]:
+    del repo, token, base_sha
     change_ids = extract_change_ids(body)
     if not change_ids:
         reporter.error(
@@ -136,7 +157,7 @@ def validate_declared_scope(
         if isinstance(value.get("change_type"), str)
     }
 
-    for path in changed_files:
+    for path in changed_file_paths(changed_files):
         path_change_id = change_id_from_path(path)
         if path_change_id is not None:
             if path_change_id not in change_ids:
@@ -203,11 +224,16 @@ def main() -> int:
         number = int(number_text)
         pull_request = api(f"https://api.github.com/repos/{repo}/pulls/{number}", token)
         files = rest_pages(f"https://api.github.com/repos/{repo}/pulls/{number}/files", token)
+        base = pull_request.get("base") if isinstance(pull_request, dict) else None
+        base_sha = base.get("sha") if isinstance(base, dict) else None
         metadata = validate_declared_scope(
             ROOT,
             pull_request.get("body") or "",
-            changed_file_paths(files),
+            files,
             reporter,
+            repo=repo,
+            token=token,
+            base_sha=base_sha,
         )
         validate_issues(repo, token, metadata, reporter)
     except (OSError, ValueError, TypeError, KeyError, yaml.YAMLError, urllib.error.URLError) as exc:
