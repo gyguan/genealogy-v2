@@ -200,6 +200,20 @@ class HighRiskHumanApprovalTests(unittest.TestCase):
             )
         )
 
+    def test_later_comment_does_not_invalidate_human_approval(self) -> None:
+        reviews = [
+            self.review("reviewer", "APPROVED", 3),
+            self.review("reviewer", "COMMENTED", 4),
+        ]
+        self.assertTrue(
+            has_current_head_human_approval(
+                reviews,
+                "head-sha",
+                "author",
+                {"chatgpt-codex-connector"},
+            )
+        )
+
     def test_later_changes_requested_invalidates_human_approval(self) -> None:
         reviews = [
             self.review("reviewer", "APPROVED", 3),
