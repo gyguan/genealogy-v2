@@ -26,6 +26,26 @@ class MachineDesignValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("missing facets: events", result.stdout)
 
+    def test_boolean_change_machine_version_is_rejected(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "change.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["design_machine_contract_version"] = True
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_design_machine.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("require design_machine_contract_version: integer 1", result.stdout)
+
+    def test_boolean_design_machine_version_is_rejected(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["version"] = True
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_design_machine.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("version must be integer 1", result.stdout)
+
     def test_review_required_must_be_resolved_before_review(self) -> None:
         root = copy_repo(self)
         path = root / CHANGE / "design.yaml"
