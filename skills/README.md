@@ -9,6 +9,7 @@ grill-with-docs
 → domain-modeling
 → to-spec
 → openspec-validation
+→ design-review（独立上下文）
 → to-tickets
 → implement + tdd
 → code-review
