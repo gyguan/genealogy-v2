@@ -56,6 +56,27 @@ class MachineDesignValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("does not cover spec", result.stdout)
 
+    def test_security_definition_requires_spec(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        security = next(item for item in data["definitions"] if item["id"] == "SEC-GOV-V11-001")
+        security["specs"] = []
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_design_machine.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("security definition SEC-GOV-V11-001 must link specs", result.stdout)
+
+    def test_required_traceability_facet_needs_definition(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["facets"]["tests_traceability"]["design_ids"] = []
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_design_machine.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("required facet tests_traceability needs design_ids", result.stdout)
+
     def test_blocking_assumption_must_be_resolved(self) -> None:
         root = copy_repo(self)
         path = root / CHANGE / "design.yaml"
