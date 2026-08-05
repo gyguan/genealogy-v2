@@ -22,6 +22,37 @@ TASK_PATTERN = re.compile(
 LEVEL2_PATTERN = re.compile(r"^##[ \t]+(.+?)[ \t]*$", re.M)
 SPEC_TITLE_PATTERN = re.compile(r"^(SPEC-[A-Z0-9-]+)(?:[ \t]+[^\r\n]+)?$")
 FENCE_OPEN_PATTERN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+FORBIDDEN_ID_TOKENS = {
+    "REPLACE-ME",
+    "EXAMPLE",
+    "SAMPLE",
+    "TEMPLATE",
+    "PLACEHOLDER",
+    "XXXX",
+}
+ORIGINAL_LOAD_TEST_REGISTRY = core.load_test_registry
+
+
+def placeholder_identifier(value: str) -> bool:
+    normalized = value.upper()
+    return any(token in normalized for token in FORBIDDEN_ID_TOKENS) or bool(
+        re.search(r"(?:^|-)0000(?:-|$)", normalized)
+    )
+
+
+def reject_placeholder_id(
+    identifier: str,
+    reporter: Reporter,
+    path: Path,
+    *,
+    strict: bool = True,
+) -> None:
+    if strict and placeholder_identifier(identifier):
+        reporter.error(
+            "ID-PLACEHOLDER-001",
+            f"template identifier {identifier} must be replaced before review",
+            core.rel(path),
+        )
 
 
 def strip_fenced_blocks(text: str) -> str:
@@ -106,6 +137,7 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
     scenario_ids: set[str] = set()
     for match, block in spec_blocks(text):
         spec_id = match.group(1)
+        reject_placeholder_id(spec_id, reporter, path, strict=strict)
         if strict and action_for_spec(text, match.start()) is None:
             reporter.error(
                 "SPEC-FORMAT-003",
@@ -140,6 +172,7 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
                     core.rel(path),
                 )
             for scenario_id in scenarios:
+                reject_placeholder_id(scenario_id, reporter, path, strict=strict)
                 if scenario_id in scenario_ids:
                     reporter.error(
                         "SPEC-SCENARIO-002",
@@ -200,7 +233,9 @@ def parse_task_fields(path: Path, reporter: Reporter) -> list[dict[str, str]]:
     )
     tasks: list[dict[str, str]] = []
     for match, block in core.split_blocks(TASK_PATTERN, text):
-        item = {"id": match.group(1)}
+        task_id = match.group(1)
+        reject_placeholder_id(task_id, reporter, path)
+        item = {"id": task_id}
         for field in fields:
             found = re.search(
                 rf"^-[ \t]+{re.escape(field)}:[ \t]*(.*?)[ \t]*$",
@@ -213,12 +248,25 @@ def parse_task_fields(path: Path, reporter: Reporter) -> list[dict[str, str]]:
     return tasks
 
 
+def load_test_registry(
+    change_dir: Path,
+    reporter: Reporter,
+    strict: bool,
+    known_specs: set[str],
+) -> dict[str, dict]:
+    registry = ORIGINAL_LOAD_TEST_REGISTRY(change_dir, reporter, strict, known_specs)
+    for test_id in registry:
+        reject_placeholder_id(test_id, reporter, change_dir / "tests.yaml", strict=strict)
+    return registry
+
+
 def main() -> int:
     core.SPEC_PATTERN = SPEC_PATTERN
     core.SCENARIO_PATTERN = SCENARIO_PATTERN
     core.TASK_PATTERN = TASK_PATTERN
     core.parse_specs = parse_specs
     core.parse_task_fields = parse_task_fields
+    core.load_test_registry = load_test_registry
     return core.main()
 
 
