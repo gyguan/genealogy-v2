@@ -313,8 +313,23 @@ def has_current_head_human_approval(
         review
         for review in reviews
         if review.get("commit_id") == current_head and is_human_review(review, author, ai_actors)
+        and isinstance(review.get("submitted_at"), str)
     ]
-    return any(review.get("state") == "APPROVED" for review in latest_reviews_by_actor(current))
+    approvals: dict[str, bool] = {}
+    for review in sorted(
+        current,
+        key=lambda value: (
+            parse_time(value["submitted_at"]),
+            int(value.get("id") or 0),
+        ),
+    ):
+        actor = normalized_login(review.get("user", {}).get("login"))
+        state = review.get("state")
+        if state == "APPROVED":
+            approvals[actor] = True
+        elif state in {"CHANGES_REQUESTED", "DISMISSED"}:
+            approvals[actor] = False
+    return any(approvals.values())
 
 
 def main() -> int:
