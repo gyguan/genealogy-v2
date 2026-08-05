@@ -60,14 +60,27 @@ def decode_contents_payload(payload: Any) -> str:
 
 def changed_file_entries(files: list[dict] | list[str]) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
-    for item in core.normalize_changed_files(files):
+    for raw in files:
+        if isinstance(raw, str):
+            item: dict[str, Any] = {"filename": raw, "status": "modified"}
+            has_file_metadata = False
+        elif isinstance(raw, dict) and isinstance(raw.get("filename"), str):
+            item = dict(raw)
+            has_file_metadata = True
+        else:
+            continue
+
         filename = item["filename"]
         status = item.get("status") or "modified"
         current = dict(item)
         current["path"] = filename
         current["source"] = "base" if status == "removed" else "head"
         entries.append(current)
-        if status == "modified" and FORMAL_DECISION_PATTERN.fullmatch(filename):
+        if (
+            has_file_metadata
+            and status == "modified"
+            and FORMAL_DECISION_PATTERN.fullmatch(filename)
+        ):
             old = dict(item)
             old["path"] = filename
             old["source"] = "base"
