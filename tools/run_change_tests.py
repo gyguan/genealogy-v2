@@ -106,7 +106,7 @@ def collect_commands(root: Path, change_ids: Iterable[str]) -> list[tuple[str, s
 
 
 def safe_environment(source: dict[str, str] | None = None) -> dict[str, str]:
-    values = source or dict(os.environ)
+    values = dict(os.environ) if source is None else source
     return {key: value for key, value in values.items() if key in SAFE_ENVIRONMENT_KEYS}
 
 
