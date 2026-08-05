@@ -1,0 +1,152 @@
+version: 1
+change: CHG-0009
+status: approved
+references:
+  capabilities: []
+  specs:
+    - SPEC-GOV-V11-001
+    - SPEC-GOV-V11-002
+    - SPEC-GOV-V11-003
+    - SPEC-GOV-V11-004
+    - SPEC-GOV-V11-005
+  domains: []
+  decisions:
+    - DEC-0001
+facets:
+  workflow:
+    status: required
+    reason: 新设计流程从上下文准备延伸到独立语义评审
+    design_ids: [FLOW-GOV-V11-001]
+  domain_model:
+    status: not-applicable
+    reason: 本 Change 不修改族谱领域概念、规则或不变量
+    design_ids: []
+  state_machine:
+    status: not-applicable
+    reason: 本 Change 只复用既有 Change 与 Gate 状态
+    design_ids: []
+  persistence:
+    status: not-applicable
+    reason: 本 Change 不新增业务持久化结构或数据生命周期
+    design_ids: []
+  external_api:
+    status: not-applicable
+    reason: 本 Change 不新增网络或对外 API 契约
+    design_ids: []
+  ui:
+    status: not-applicable
+    reason: 本 Change 不提供终端用户界面
+    design_ids: []
+  events:
+    status: not-applicable
+    reason: 本 Change 不发布或订阅领域事件
+    design_ids: []
+  migration:
+    status: required
+    reason: 必须保持 CHG-0001 至 CHG-0008 的契约兼容
+    design_ids: [MIG-GOV-V11-001]
+  performance:
+    status: not-applicable
+    reason: 仓库资产规模无需独立性能预算
+    design_ids: []
+  security_privacy:
+    status: required
+    reason: 必须阻止 AI 将无来源推断作为正式事实
+    design_ids: [SEC-GOV-V11-001]
+  module_consistency:
+    status: required
+    reason: 新工具和 Skill 必须遵守现有仓库模块边界
+    design_ids: [MODULE-GOV-V11-001, MODULE-GOV-V11-002, MODULE-GOV-V11-003, MODULE-GOV-V11-004]
+  tests_traceability:
+    status: required
+    reason: 每个正式 Spec 必须追踪到机器定义和注册测试
+    design_ids: [TRACE-GOV-V11-001]
+facts:
+  - id: FACT-GOV-V11-001
+    statement: Design Contract v1 已在 CHG-0007 中作为强制设计门禁合入
+    source: {type: repository, reference: changes/CHG-0007-requirement-design-contract}
+  - id: FACT-GOV-V11-002
+    statement: 当前正式追踪关系主要依赖 design.md Markdown 表格解析
+    source: {type: repository, reference: tools/_validate_design_core.py}
+  - id: FACT-GOV-V11-003
+    statement: Issue 15 明确要求机器契约、Context Pack 和独立设计评审
+    source: {type: issue, reference: gyguan/genealogy-v2#15}
+assumptions:
+  - id: ASM-GOV-V11-001
+    statement: v1 Markdown 门禁在过渡期继续保留以保障历史兼容
+    status: confirmed
+    blocking: false
+open_questions: []
+definitions:
+  - id: FLOW-GOV-V11-001
+    kind: flow
+    section: 方案概览
+    summary: 创建 Change 后先读取 Context Pack，再完成机器契约、设计解释、确定性校验和独立语义评审
+    basis: [FACT-GOV-V11-001, FACT-GOV-V11-003, SPEC-GOV-V11-004]
+    specs: [SPEC-GOV-V11-004]
+    tests: [TEST-DESIGN-V11-004]
+  - id: MODULE-GOV-V11-001
+    kind: module
+    section: 接口与模块边界
+    summary: validate_design_machine.py 负责 YAML 机器契约的一致性和追踪校验
+    basis: [FACT-GOV-V11-002, SPEC-GOV-V11-001, SPEC-GOV-V11-005]
+    specs: [SPEC-GOV-V11-001, SPEC-GOV-V11-005]
+    tests: [TEST-DESIGN-V11-001]
+  - id: MODULE-GOV-V11-002
+    kind: module
+    section: 接口与模块边界
+    summary: new_change.py 按 Change 类型初始化机器 facet 和正式引用
+    basis: [SPEC-GOV-V11-001, SPEC-GOV-V11-003]
+    specs: [SPEC-GOV-V11-001, SPEC-GOV-V11-003]
+    tests: [TEST-DESIGN-V11-002]
+  - id: MODULE-GOV-V11-003
+    kind: module
+    section: 接口与模块边界
+    summary: context.py bundle 模式输出精确且可追溯的 AI 最小上下文
+    basis: [SPEC-GOV-V11-004]
+    specs: [SPEC-GOV-V11-004]
+    tests: [TEST-DESIGN-V11-004]
+  - id: MODULE-GOV-V11-004
+    kind: module
+    section: 接口与模块边界
+    summary: design-review Skill 使用独立上下文执行语义挑战
+    basis: [FACT-GOV-V11-003, SPEC-GOV-V11-004]
+    specs: [SPEC-GOV-V11-004]
+    tests: [TEST-DESIGN-V11-005]
+  - id: MIG-GOV-V11-001
+    kind: migration
+    section: 迁移方案
+    summary: CHG-0001 至 CHG-0008 继续使用 v1，CHG-0009 起叠加机器契约
+    basis: [FACT-GOV-V11-001, ASM-GOV-V11-001, SPEC-GOV-V11-001]
+    specs: [SPEC-GOV-V11-001]
+    tests: [TEST-DESIGN-V11-005]
+  - id: SEC-GOV-V11-001
+    kind: security
+    section: 安全与隐私
+    summary: FACT 必须有来源且阻断假设和开放问题不得进入批准态
+    basis: [FACT-GOV-V11-003, SPEC-GOV-V11-002]
+    specs: [SPEC-GOV-V11-002]
+    tests: [TEST-DESIGN-V11-003, TEST-DESIGN-V11-SEC-001]
+  - id: TRACE-GOV-V11-001
+    kind: traceability
+    section: 测试 Seam
+    summary: 每个正式 Spec 必须由机器 Definition 和 tests.yaml 注册测试双向覆盖
+    basis: [SPEC-GOV-V11-001, SPEC-GOV-V11-002, SPEC-GOV-V11-003, SPEC-GOV-V11-004, SPEC-GOV-V11-005]
+    specs: [SPEC-GOV-V11-001, SPEC-GOV-V11-002, SPEC-GOV-V11-003, SPEC-GOV-V11-004, SPEC-GOV-V11-005]
+    tests: [TEST-DESIGN-V11-TRACE-001]
+traceability:
+  - spec: SPEC-GOV-V11-001
+    design_ids: [MODULE-GOV-V11-001, MODULE-GOV-V11-002, MIG-GOV-V11-001, TRACE-GOV-V11-001]
+    tests: [TEST-DESIGN-V11-001, TEST-DESIGN-V11-002, TEST-DESIGN-V11-005, TEST-DESIGN-V11-TRACE-001]
+  - spec: SPEC-GOV-V11-002
+    design_ids: [SEC-GOV-V11-001, TRACE-GOV-V11-001]
+    tests: [TEST-DESIGN-V11-003, TEST-DESIGN-V11-SEC-001, TEST-DESIGN-V11-TRACE-001]
+  - spec: SPEC-GOV-V11-003
+    design_ids: [MODULE-GOV-V11-002, TRACE-GOV-V11-001]
+    tests: [TEST-DESIGN-V11-002, TEST-DESIGN-V11-003, TEST-DESIGN-V11-TRACE-001]
+  - spec: SPEC-GOV-V11-004
+    design_ids: [FLOW-GOV-V11-001, MODULE-GOV-V11-003, MODULE-GOV-V11-004, TRACE-GOV-V11-001]
+    tests: [TEST-DESIGN-V11-004, TEST-DESIGN-V11-005, TEST-DESIGN-V11-TRACE-001]
+  - spec: SPEC-GOV-V11-005
+    design_ids: [MODULE-GOV-V11-001, TRACE-GOV-V11-001]
+    tests: [TEST-DESIGN-V11-001, TEST-DESIGN-V11-005, TEST-DESIGN-V11-SEC-001, TEST-DESIGN-V11-TRACE-001]
