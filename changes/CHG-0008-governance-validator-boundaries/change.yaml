@@ -5,7 +5,7 @@ title: governance-validator-boundaries
 change_type: governance
 change_profile: standard
 quality_policy: strict
-status: implementing
+status: completed
 issue:
   repository: gyguan/genealogy-v2
   number: 13
@@ -28,10 +28,10 @@ gates:
     reference: issue-13
     evidence: evidence/implementation-approval.md
   release_approval:
-    status: blocked
-    approved_by: null
-    approved_at: null
-    source: null
-    reference: null
-    evidence: null
+    status: approved
+    approved_by: gyguan
+    approved_at: '2026-08-05T10:41:00+08:00'
+    source: github-pull-request
+    reference: PR-14
+    evidence: evidence/release-approval.md
 cancellation_reason: null
