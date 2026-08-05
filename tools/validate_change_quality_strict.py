@@ -21,7 +21,33 @@ TASK_PATTERN = re.compile(
 )
 LEVEL2_PATTERN = re.compile(r"^##[ \t]+(.+?)[ \t]*$", re.M)
 SPEC_TITLE_PATTERN = re.compile(r"^(SPEC-[A-Z0-9-]+)(?:[ \t]+[^\r\n]+)?$")
-FENCED_BLOCK_PATTERN = re.compile(r"```[^\n]*\n[\s\S]*?```", re.M)
+FENCE_OPEN_PATTERN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
+def strip_fenced_blocks(text: str) -> str:
+    """Mask CommonMark fenced blocks while preserving line boundaries."""
+    output: list[str] = []
+    fence_char: str | None = None
+    fence_length = 0
+    for line in text.splitlines():
+        if fence_char is not None:
+            output.append("")
+            if re.fullmatch(
+                rf" {{0,3}}{re.escape(fence_char)}{{{fence_length},}}[ \t]*",
+                line,
+            ):
+                fence_char = None
+                fence_length = 0
+            continue
+        match = FENCE_OPEN_PATTERN.match(line)
+        if match:
+            marker = match.group(1)
+            fence_char = marker[0]
+            fence_length = len(marker)
+            output.append("")
+            continue
+        output.append(line)
+    return "\n".join(output)
 
 
 def action_for_spec(text: str, spec_start: int) -> str | None:
@@ -60,7 +86,7 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
     if path.name.casefold() == "readme.md":
         return set(), set()
     try:
-        text = path.read_text(encoding="utf-8")
+        text = strip_fenced_blocks(path.read_text(encoding="utf-8"))
     except OSError as exc:
         reporter.error("SPEC-READ-001", f"cannot read Spec: {exc}", core.rel(path))
         return set(), set()
@@ -157,11 +183,10 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
 
 def parse_task_fields(path: Path, reporter: Reporter) -> list[dict[str, str]]:
     try:
-        text = path.read_text(encoding="utf-8")
+        text = strip_fenced_blocks(path.read_text(encoding="utf-8"))
     except OSError as exc:
         reporter.error("TASK-READ-001", f"cannot read Tasks: {exc}", core.rel(path))
         return []
-    text = FENCED_BLOCK_PATTERN.sub("", text)
     fields = (
         "Specs",
         "Status",

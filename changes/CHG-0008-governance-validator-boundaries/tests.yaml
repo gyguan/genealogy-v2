@@ -1,0 +1,14 @@
+version: 1
+tests:
+  - id: TEST-GOV-BOUNDARY-001
+    specs: [SPEC-GOV-BOUNDARY-001]
+    command: python -m unittest tools.tests.test_governance_validator_boundaries.DecisionScopeBoundaryTests
+  - id: TEST-GOV-BOUNDARY-002
+    specs: [SPEC-GOV-BOUNDARY-002]
+    command: python -m unittest tools.tests.test_governance_validator_boundaries.SpecVisibilityBoundaryTests
+  - id: TEST-GOV-BOUNDARY-003
+    specs: [SPEC-GOV-BOUNDARY-003]
+    command: python -m unittest tools.tests.test_governance_validator_boundaries.DesignParagraphBoundaryTests
+  - id: TEST-GOV-BOUNDARY-SEC-001
+    specs: [SPEC-GOV-BOUNDARY-001, SPEC-GOV-BOUNDARY-002, SPEC-GOV-BOUNDARY-003]
+    command: python tools/check.py
