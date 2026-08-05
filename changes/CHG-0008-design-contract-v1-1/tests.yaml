@@ -18,3 +18,6 @@ tests:
   - id: TEST-DESIGN-V11-SEC-001
     specs: [SPEC-GOV-V11-002, SPEC-GOV-V11-005]
     command: python tools/validate_design_machine.py
+  - id: TEST-DESIGN-V11-TRACE-001
+    specs: [SPEC-GOV-V11-001, SPEC-GOV-V11-002, SPEC-GOV-V11-003, SPEC-GOV-V11-004, SPEC-GOV-V11-005]
+    command: python tools/check.py
