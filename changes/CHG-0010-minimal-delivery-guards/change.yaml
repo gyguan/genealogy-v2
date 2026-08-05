@@ -4,7 +4,7 @@ design_machine_contract_version: 1
 id: CHG-0010
 title: minimal-delivery-guards
 change_type: governance
-change_profile: standard
+change_profile: high-risk
 quality_policy: strict
 status: completed
 issue:
