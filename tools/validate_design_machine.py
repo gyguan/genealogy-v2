@@ -54,6 +54,10 @@ def rel(path: Path) -> str:
     return str(path.relative_to(ROOT))
 
 
+def is_version_one(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value == 1
+
+
 def load_yaml(path: Path) -> dict | None:
     try:
         value = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -374,8 +378,8 @@ def validate_template() -> None:
     data = load_yaml(path)
     if data is None:
         return
-    if data.get("version") != 1 or data.get("change") != "CHG-0000" or data.get("status") != "draft":
-        fail(f"{rel(path)}: template must use version 1, CHG-0000 and draft status")
+    if not is_version_one(data.get("version")) or data.get("change") != "CHG-0000" or data.get("status") != "draft":
+        fail(f"{rel(path)}: template must use integer version 1, CHG-0000 and draft status")
     reference_lists(data, path)
     facts = validate_facts(data, path)
     assumptions = validate_assumptions(data, path, review_ready=False)
@@ -394,10 +398,10 @@ def validate_change(change_dir: Path) -> None:
     if change is None:
         return
     number, version = change_number(change.get("id")), change.get("design_machine_contract_version")
-    if number is not None and number >= REQUIRED_FROM_CHANGE_NUMBER and version != 1:
-        fail(f"{rel(change_path)}: CHG-0008 and later require design_machine_contract_version: 1")
+    if number is not None and number >= REQUIRED_FROM_CHANGE_NUMBER and not is_version_one(version):
+        fail(f"{rel(change_path)}: CHG-0008 and later require design_machine_contract_version: integer 1")
         return
-    if version != 1:
+    if not is_version_one(version):
         return
     path = change_dir / "design.yaml"
     if not path.is_file():
@@ -406,7 +410,7 @@ def validate_change(change_dir: Path) -> None:
     data = load_yaml(path)
     if data is None:
         return
-    if data.get("version") != 1:
+    if not is_version_one(data.get("version")):
         fail(f"{rel(path)}: version must be integer 1")
     if data.get("change") != change.get("id"):
         fail(f"{rel(path)}: change must equal change.yaml id")
