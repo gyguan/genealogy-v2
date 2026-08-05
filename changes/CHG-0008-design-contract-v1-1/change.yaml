@@ -1,0 +1,21 @@
+version: 2
+design_contract_version: 1
+design_machine_contract_version: 1
+id: CHG-0008
+title: design-contract-v1-1
+change_type: governance
+change_profile: standard
+quality_policy: strict
+status: review
+issue:
+  repository: gyguan/genealogy-v2
+  number: 15
+capabilities: []
+affected_domains: []
+affected_decisions:
+  - DEC-0001
+gates:
+  spec_review: {status: pending, approved_by: null, approved_at: null, source: null, reference: null, evidence: null}
+  implementation_approval: {status: blocked, approved_by: null, approved_at: null, source: null, reference: null, evidence: null}
+  release_approval: {status: blocked, approved_by: null, approved_at: null, source: null, reference: null, evidence: null}
+cancellation_reason: null
