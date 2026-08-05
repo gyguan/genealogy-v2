@@ -1,0 +1,38 @@
+version: 2
+design_contract_version: 1
+id: CHG-0007
+title: requirement-design-contract
+change_type: governance
+change_profile: standard
+quality_policy: strict
+status: completed
+issue:
+  repository: gyguan/genealogy-v2
+  number: 12
+capabilities: []
+affected_domains: []
+affected_decisions:
+  - DEC-0001
+gates:
+  spec_review:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T14:42:00+08:00
+    source: github-pull-request
+    reference: PR-9
+    evidence: evidence/spec-review.md
+  implementation_approval:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T14:43:00+08:00
+    source: github-pull-request
+    reference: PR-9
+    evidence: evidence/implementation-approval.md
+  release_approval:
+    status: approved
+    approved_by: repository-owner
+    approved_at: 2026-08-04T14:44:00+08:00
+    source: github-pull-request
+    reference: PR-9
+    evidence: evidence/release-approval.md
+cancellation_reason: null

@@ -1,0 +1,26 @@
+version: 1
+tests:
+  - id: TEST-DESIGN-001
+    specs: [SPEC-GOV-DESIGN-001]
+    command: python tools/validate_design.py
+  - id: TEST-DESIGN-002
+    specs: [SPEC-GOV-DESIGN-001]
+    command: python -m unittest tools.tests.test_validate_design.DesignValidationTests.test_new_change_number_requires_design_contract
+  - id: TEST-DESIGN-003
+    specs: [SPEC-GOV-DESIGN-002]
+    command: python -m unittest tools.tests.test_validate_design.DesignValidationTests.test_design_references_must_match_change
+  - id: TEST-DESIGN-004
+    specs: [SPEC-GOV-DESIGN-003]
+    command: python -m unittest tools.tests.test_validate_design.DesignValidationTests.test_not_applicable_facet_requires_reason
+  - id: TEST-DESIGN-005
+    specs: [SPEC-GOV-DESIGN-004]
+    command: python -m unittest tools.tests.test_validate_design.DesignValidationTests.test_every_spec_must_appear_in_traceability
+  - id: TEST-DESIGN-006
+    specs: [SPEC-GOV-DESIGN-005]
+    command: python -m unittest tools.tests.test_validate_design_contract_bypasses
+  - id: TEST-DESIGN-SEC-001
+    specs: [SPEC-GOV-DESIGN-005]
+    command: python tools/check.py
+  - id: TEST-DESIGN-SEC-002
+    specs: [SPEC-GOV-DESIGN-005]
+    command: python -m unittest tools.tests.test_validate_design_markdown_semantics

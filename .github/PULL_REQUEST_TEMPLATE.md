@@ -4,6 +4,7 @@
 - Change 类型 / Profile / Quality Policy：
 - 产品能力：
 - Spec 路径：
+- Design Contract：
 - 关联 Decision / Issue：
 - 当前 Gate：
 
@@ -12,6 +13,7 @@
 ## 验证
 
 - [ ] `python tools/check.py`
+- [ ] Design Frontmatter、applicability、Spec 追踪和开放问题已通过校验
 - [ ] 相关业务测试或 Eval
 - [ ] Error 已清零
 - [ ] Warning 已解决或在下方明确接受
@@ -30,7 +32,7 @@
 
 - Head SHA：
 - Check Run：
-- Gate / 测试证据：
+- Gate / 设计 / 测试证据：
 - 评审结果：
 
 ## 风险
