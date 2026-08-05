@@ -13,6 +13,17 @@ PLACEHOLDER_PATTERN = re.compile(
     r"(?i)(?<![A-Za-z0-9_])(?:TODO|TBD|FIXME)(?![A-Za-z0-9_])"
     r"|待确认|待补充|待完善|待明确|尚未确定|暂未确定"
 )
+STABLE_ID_PATTERN = re.compile(
+    r"(?<![A-Z0-9-])(?:SPEC|SCN|TASK|TEST|FACT|ASM|OPEN|FLOW|UC|MODEL|RULE|INV|STATE|CMD|DATA|CONSTRAINT|API|UI|EVENT|MIG|NFR|SEC|MODULE|FAIL|TRACE)-[A-Z0-9-]+(?![A-Z0-9-])"
+)
+FORBIDDEN_ID_TOKENS = {
+    "REPLACE-ME",
+    "EXAMPLE",
+    "SAMPLE",
+    "TEMPLATE",
+    "PLACEHOLDER",
+    "XXXX",
+}
 
 
 def walk_strings(value: Any, location: str = "$"):
@@ -24,6 +35,13 @@ def walk_strings(value: Any, location: str = "$"):
             yield from walk_strings(item, f"{location}[{index}]")
     elif isinstance(value, str):
         yield location, value
+
+
+def placeholder_identifier(value: str) -> bool:
+    normalized = value.upper()
+    return any(token in normalized for token in FORBIDDEN_ID_TOKENS) or bool(
+        re.search(r"(?:^|-)0000(?:-|$)", normalized)
+    )
 
 
 def validate_review_ready_placeholders(change_dir: Path) -> None:
@@ -48,9 +66,15 @@ def validate_review_ready_placeholders(change_dir: Path) -> None:
             core.fail(
                 f"{core.rel(design_path)}: {location} contains unresolved placeholder: {text!r}"
             )
+        for identifier in STABLE_ID_PATTERN.findall(text):
+            if placeholder_identifier(identifier):
+                core.fail(
+                    f"{core.rel(design_path)}: {location} contains template identifier {identifier}"
+                )
 
 
 def main() -> int:
+    core.ERRORS.clear()
     core.validate_template()
     for change_dir in sorted((core.ROOT / "changes").glob("CHG-*")):
         if change_dir.is_dir():
