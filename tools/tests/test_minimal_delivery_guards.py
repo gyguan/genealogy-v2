@@ -214,6 +214,13 @@ class HighRiskHumanApprovalTests(unittest.TestCase):
             )
         )
 
+    def test_pr_body_edit_revalidates_profile_governance(self) -> None:
+        text = (ROOT / ".github/workflows/pr-governance.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("pull_request:\n    types: [edited]", text)
+        self.assertIn("github.event_name == 'pull_request'", text)
+
 
 if __name__ == "__main__":
     unittest.main()
