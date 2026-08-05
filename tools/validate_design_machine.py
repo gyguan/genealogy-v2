@@ -25,7 +25,7 @@ KIND_PREFIX = {
     "flow": "FLOW-", "use_case": "UC-", "model": "MODEL-", "rule": "RULE-", "invariant": "INV-",
     "state": "STATE-", "command": "CMD-", "data": "DATA-", "constraint": "CONSTRAINT-",
     "api": "API-", "ui": "UI-", "event": "EVENT-", "migration": "MIG-", "nfr": "NFR-",
-    "security": "SEC-", "module": "MODULE-", "failure": "FAIL-",
+    "security": "SEC-", "module": "MODULE-", "failure": "FAIL-", "traceability": "TRACE-",
 }
 FACET_KINDS = {
     "workflow": {"flow", "use_case"},
@@ -39,9 +39,10 @@ FACET_KINDS = {
     "performance": {"nfr"},
     "security_privacy": {"security"},
     "module_consistency": {"module"},
-    "tests_traceability": set(),
+    "tests_traceability": {"traceability"},
 }
-TEST_REQUIRED_KINDS = {"rule", "invariant", "command", "constraint", "security"}
+TEST_REQUIRED_KINDS = {"rule", "invariant", "command", "constraint", "security", "traceability"}
+SPEC_REQUIRED_KINDS = {"rule", "invariant", "command", "constraint", "security", "traceability"}
 SOURCE_TYPES = {"capability", "domain", "decision", "spec", "security", "issue", "user-confirmed", "repository"}
 
 
@@ -66,34 +67,27 @@ def load_yaml(path: Path) -> dict | None:
 
 
 def change_number(value: object) -> int | None:
-    if not isinstance(value, str):
-        return None
-    match = re.fullmatch(r"CHG-(\d{4})", value)
+    match = re.fullmatch(r"CHG-(\d{4})", value) if isinstance(value, str) else None
     return int(match.group(1)) if match else None
 
 
 def spec_gate_approved(change: dict) -> bool:
     gates = change.get("gates")
-    if not isinstance(gates, dict):
-        return False
-    gate = gates.get("spec_review")
+    gate = gates.get("spec_review") if isinstance(gates, dict) else None
     return isinstance(gate, dict) and gate.get("status") == "approved"
 
 
 def expected_status(change: dict) -> str:
     if spec_gate_approved(change) or change.get("status") in APPROVED_STATES:
         return "approved"
-    if change.get("status") == "review":
-        return "review"
-    return "draft"
+    return "review" if change.get("status") == "review" else "draft"
 
 
 def spec_ids(change_dir: Path) -> set[str]:
     result: set[str] = set()
     for path in sorted((change_dir / "specs").glob("*.md")):
-        if path.name == "README.md":
-            continue
-        result.update(re.findall(r"^##\s+(SPEC-[A-Z0-9-]+)(?:\s|$)", path.read_text(encoding="utf-8"), re.M))
+        if path.name != "README.md":
+            result.update(re.findall(r"^##\s+(SPEC-[A-Z0-9-]+)(?:\s|$)", path.read_text(encoding="utf-8"), re.M))
     return result
 
 
@@ -105,21 +99,17 @@ def test_registry(change_dir: Path) -> dict[str, set[str]]:
     data = load_yaml(path)
     if data is None:
         return {}
-    result: dict[str, set[str]] = {}
     tests = data.get("tests")
     if not isinstance(tests, list):
         fail(f"{rel(path)}: tests must be a list")
-        return result
+        return {}
+    result: dict[str, set[str]] = {}
     for item in tests:
         if not isinstance(item, dict):
             continue
-        test_id = item.get("id")
-        specs = item.get("specs")
-        if not isinstance(test_id, str) or not re.fullmatch(r"TEST-[A-Z0-9-]+", test_id):
-            continue
-        if not isinstance(specs, list) or any(not isinstance(value, str) for value in specs):
-            specs = []
-        result[test_id] = set(specs)
+        test_id, specs = item.get("id"), item.get("specs")
+        if isinstance(test_id, str) and re.fullmatch(r"TEST-[A-Z0-9-]+", test_id):
+            result[test_id] = set(specs) if isinstance(specs, list) and all(isinstance(value, str) for value in specs) else set()
     return result
 
 
@@ -152,7 +142,7 @@ def validate_facts(data: dict, path: Path) -> set[str]:
     if not isinstance(facts, list):
         fail(f"{rel(path)}: facts must be a list")
         return set()
-    ids: set[str] = set()
+    result: set[str] = set()
     for item in facts:
         if not isinstance(item, dict):
             fail(f"{rel(path)}: every fact must be an object")
@@ -161,9 +151,9 @@ def validate_facts(data: dict, path: Path) -> set[str]:
         if not isinstance(fact_id, str) or not re.fullmatch(r"FACT-[A-Z0-9-]+", fact_id):
             fail(f"{rel(path)}: fact id must match FACT-...")
             continue
-        if fact_id in ids:
+        if fact_id in result:
             fail(f"{rel(path)}: duplicate fact id {fact_id}")
-        ids.add(fact_id)
+        result.add(fact_id)
         if not isinstance(item.get("statement"), str) or len(item["statement"].strip()) < 8:
             fail(f"{rel(path)}: fact {fact_id} needs a concrete statement")
         source = item.get("source")
@@ -174,7 +164,7 @@ def validate_facts(data: dict, path: Path) -> set[str]:
             fail(f"{rel(path)}: fact {fact_id} has unsupported source type")
         if not isinstance(source.get("reference"), str) or len(source["reference"].strip()) < 3:
             fail(f"{rel(path)}: fact {fact_id} needs a source reference")
-    return ids
+    return result
 
 
 def validate_assumptions(data: dict, path: Path, review_ready: bool) -> set[str]:
@@ -182,7 +172,7 @@ def validate_assumptions(data: dict, path: Path, review_ready: bool) -> set[str]
     if not isinstance(assumptions, list):
         fail(f"{rel(path)}: assumptions must be a list")
         return set()
-    ids: set[str] = set()
+    result: set[str] = set()
     for item in assumptions:
         if not isinstance(item, dict):
             fail(f"{rel(path)}: every assumption must be an object")
@@ -191,9 +181,9 @@ def validate_assumptions(data: dict, path: Path, review_ready: bool) -> set[str]
         if not isinstance(assumption_id, str) or not re.fullmatch(r"ASM-[A-Z0-9-]+", assumption_id):
             fail(f"{rel(path)}: assumption id must match ASM-...")
             continue
-        if assumption_id in ids:
+        if assumption_id in result:
             fail(f"{rel(path)}: duplicate assumption id {assumption_id}")
-        ids.add(assumption_id)
+        result.add(assumption_id)
         if not isinstance(item.get("statement"), str) or len(item["statement"].strip()) < 8:
             fail(f"{rel(path)}: assumption {assumption_id} needs a concrete statement")
         if item.get("status") not in {"proposed", "confirmed", "rejected"}:
@@ -202,7 +192,7 @@ def validate_assumptions(data: dict, path: Path, review_ready: bool) -> set[str]
             fail(f"{rel(path)}: assumption {assumption_id} blocking must be boolean")
         if review_ready and item.get("blocking") and item.get("status") == "proposed":
             fail(f"{rel(path)}: blocking assumption {assumption_id} must be resolved before review")
-    return ids
+    return result
 
 
 def validate_open_questions(data: dict, path: Path, approved: bool) -> set[str]:
@@ -210,7 +200,7 @@ def validate_open_questions(data: dict, path: Path, approved: bool) -> set[str]:
     if not isinstance(questions, list):
         fail(f"{rel(path)}: open_questions must be a list")
         return set()
-    ids: set[str] = set()
+    result: set[str] = set()
     for item in questions:
         if not isinstance(item, dict):
             fail(f"{rel(path)}: every open question must be an object")
@@ -219,21 +209,30 @@ def validate_open_questions(data: dict, path: Path, approved: bool) -> set[str]:
         if not isinstance(question_id, str) or not re.fullmatch(r"OPEN-[A-Z0-9-]+", question_id):
             fail(f"{rel(path)}: open question id must match OPEN-...")
             continue
-        if question_id in ids:
+        if question_id in result:
             fail(f"{rel(path)}: duplicate open question id {question_id}")
-        ids.add(question_id)
+        result.add(question_id)
         if not isinstance(item.get("question"), str) or len(item["question"].strip()) < 8:
             fail(f"{rel(path)}: open question {question_id} needs concrete text")
         if not isinstance(item.get("owner"), str) or not item["owner"].strip():
             fail(f"{rel(path)}: open question {question_id} needs an owner")
         if not isinstance(item.get("blocking"), bool):
             fail(f"{rel(path)}: open question {question_id} blocking must be boolean")
-    if approved and ids:
+    if approved and result:
         fail(f"{rel(path)}: approved design cannot contain open questions")
-    return ids
+    return result
 
 
-def validate_definitions(data: dict, path: Path, specs: set[str], tests: dict[str, set[str]], fact_ids: set[str], assumption_ids: set[str], decision_ids: set[str]) -> dict[str, dict]:
+def validate_definitions(
+    data: dict,
+    path: Path,
+    specs: set[str],
+    tests: dict[str, set[str]],
+    fact_ids: set[str],
+    assumption_ids: set[str],
+    decision_ids: set[str],
+    review_ready: bool,
+) -> dict[str, dict]:
     definitions = data.get("definitions")
     if not isinstance(definitions, list):
         fail(f"{rel(path)}: definitions must be a list")
@@ -244,8 +243,7 @@ def validate_definitions(data: dict, path: Path, specs: set[str], tests: dict[st
         if not isinstance(item, dict):
             fail(f"{rel(path)}: every definition must be an object")
             continue
-        definition_id = item.get("id")
-        kind = item.get("kind")
+        definition_id, kind = item.get("id"), item.get("kind")
         if kind not in KIND_PREFIX:
             fail(f"{rel(path)}: definition {definition_id!r} has invalid kind")
             continue
@@ -272,10 +270,10 @@ def validate_definitions(data: dict, path: Path, specs: set[str], tests: dict[st
             fail(f"{rel(path)}: definition {definition_id} references unknown tests: {', '.join(unknown_tests)}")
         if unknown_basis:
             fail(f"{rel(path)}: definition {definition_id} references unknown basis: {', '.join(unknown_basis)}")
-        if kind in TEST_REQUIRED_KINDS and not definition_tests:
-            fail(f"{rel(path)}: {kind} definition {definition_id} must link tests")
-        if kind in {"rule", "invariant", "command"} and not definition_specs:
+        if review_ready and kind in SPEC_REQUIRED_KINDS and not definition_specs:
             fail(f"{rel(path)}: {kind} definition {definition_id} must link specs")
+        if review_ready and kind in TEST_REQUIRED_KINDS and not definition_tests:
+            fail(f"{rel(path)}: {kind} definition {definition_id} must link tests")
     return result
 
 
@@ -284,8 +282,7 @@ def validate_facets(data: dict, path: Path, definitions: dict[str, dict], review
     if not isinstance(facets, dict):
         fail(f"{rel(path)}: facets must be an object")
         return
-    missing = set(FACETS) - set(facets)
-    extra = set(facets) - set(FACETS)
+    missing, extra = set(FACETS) - set(facets), set(facets) - set(FACETS)
     if missing:
         fail(f"{rel(path)}: missing facets: {', '.join(sorted(missing))}")
     if extra:
@@ -295,8 +292,7 @@ def validate_facets(data: dict, path: Path, definitions: dict[str, dict], review
         if not isinstance(value, dict):
             fail(f"{rel(path)}: facet {facet} must be an object")
             continue
-        status = value.get("status")
-        reason = value.get("reason")
+        status, reason = value.get("status"), value.get("reason")
         design_ids = string_list(value.get("design_ids"), path, f"facet {facet}.design_ids")
         if status not in FACET_STATES:
             fail(f"{rel(path)}: facet {facet} has invalid status")
@@ -306,7 +302,7 @@ def validate_facets(data: dict, path: Path, definitions: dict[str, dict], review
         if status == "required":
             if not isinstance(reason, str) or len(reason.strip()) < 5:
                 fail(f"{rel(path)}: required facet {facet} needs a reason")
-            if facet != "tests_traceability" and not design_ids:
+            if review_ready and not design_ids:
                 fail(f"{rel(path)}: required facet {facet} needs design_ids")
             for design_id in design_ids:
                 definition = definitions.get(design_id)
@@ -323,7 +319,14 @@ def validate_facets(data: dict, path: Path, definitions: dict[str, dict], review
             fail(f"{rel(path)}: review-required facet {facet} cannot list design_ids yet")
 
 
-def validate_traceability(data: dict, path: Path, specs: set[str], definitions: dict[str, dict], tests: dict[str, set[str]]) -> None:
+def validate_traceability(
+    data: dict,
+    path: Path,
+    specs: set[str],
+    definitions: dict[str, dict],
+    tests: dict[str, set[str]],
+    review_ready: bool,
+) -> None:
     traceability = data.get("traceability")
     if not isinstance(traceability, list):
         fail(f"{rel(path)}: traceability must be a list")
@@ -342,9 +345,9 @@ def validate_traceability(data: dict, path: Path, specs: set[str], definitions: 
         seen.add(spec)
         design_ids = set(string_list(item.get("design_ids"), path, f"traceability {spec}.design_ids"))
         test_ids = set(string_list(item.get("tests"), path, f"traceability {spec}.tests"))
-        if not design_ids:
+        if review_ready and not design_ids:
             fail(f"{rel(path)}: traceability {spec} needs design_ids")
-        if not test_ids:
+        if review_ready and not test_ids:
             fail(f"{rel(path)}: traceability {spec} needs tests")
         for design_id in sorted(design_ids):
             definition = definitions.get(design_id)
@@ -357,9 +360,10 @@ def validate_traceability(data: dict, path: Path, specs: set[str], definitions: 
                 fail(f"{rel(path)}: traceability {spec} references unknown test {test_id}")
             elif spec not in tests[test_id]:
                 fail(f"{rel(path)}: test {test_id} does not cover spec {spec}")
-    missing = sorted(specs - seen)
-    if missing:
-        fail(f"{rel(path)}: missing traceability for specs: {', '.join(missing)}")
+    if review_ready:
+        missing = sorted(specs - seen)
+        if missing:
+            fail(f"{rel(path)}: missing traceability for specs: {', '.join(missing)}")
 
 
 def validate_template() -> None:
@@ -373,10 +377,10 @@ def validate_template() -> None:
     if data.get("version") != 1 or data.get("change") != "CHG-0000" or data.get("status") != "draft":
         fail(f"{rel(path)}: template must use version 1, CHG-0000 and draft status")
     reference_lists(data, path)
-    validate_facts(data, path)
-    validate_assumptions(data, path, review_ready=False)
+    facts = validate_facts(data, path)
+    assumptions = validate_assumptions(data, path, review_ready=False)
     validate_open_questions(data, path, approved=False)
-    definitions = validate_definitions(data, path, set(), {}, set(), set(), set())
+    definitions = validate_definitions(data, path, set(), {}, facts, assumptions, set(), review_ready=False)
     validate_facets(data, path, definitions, review_ready=False)
     if not isinstance(data.get("traceability"), list):
         fail(f"{rel(path)}: traceability must be a list")
@@ -389,8 +393,7 @@ def validate_change(change_dir: Path) -> None:
     change = load_yaml(change_path)
     if change is None:
         return
-    number = change_number(change.get("id"))
-    version = change.get("design_machine_contract_version")
+    number, version = change_number(change.get("id")), change.get("design_machine_contract_version")
     if number is not None and number >= REQUIRED_FROM_CHANGE_NUMBER and version != 1:
         fail(f"{rel(change_path)}: CHG-0008 and later require design_machine_contract_version: 1")
         return
@@ -415,25 +418,26 @@ def validate_change(change_dir: Path) -> None:
         fail(f"{rel(path)}: status must be {expected_status(change)}")
 
     refs = reference_lists(data, path)
-    expected_refs = {
+    expected_refs: dict[str, object] = {
         "capabilities": change.get("capabilities", []),
         "domains": change.get("affected_domains", []),
         "decisions": change.get("affected_decisions", []),
         "specs": sorted(spec_ids(change_dir)),
     }
     for key, expected in expected_refs.items():
-        if not isinstance(expected, list):
-            expected = list(expected)
-        if set(refs[key]) != set(expected):
+        expected_values = expected if isinstance(expected, list) else list(expected)
+        if set(refs[key]) != set(expected_values):
             fail(f"{rel(path)}: references.{key} must match formal assets")
 
     tests = test_registry(change_dir)
-    fact_ids = validate_facts(data, path)
-    assumption_ids = validate_assumptions(data, path, review_ready)
+    facts = validate_facts(data, path)
+    assumptions = validate_assumptions(data, path, review_ready)
     validate_open_questions(data, path, approved)
-    definitions = validate_definitions(data, path, set(refs["specs"]), tests, fact_ids, assumption_ids, set(refs["decisions"]))
+    definitions = validate_definitions(
+        data, path, set(refs["specs"]), tests, facts, assumptions, set(refs["decisions"]), review_ready
+    )
     validate_facets(data, path, definitions, review_ready)
-    validate_traceability(data, path, set(refs["specs"]), definitions, tests)
+    validate_traceability(data, path, set(refs["specs"]), definitions, tests, review_ready)
 
 
 def main() -> int:
