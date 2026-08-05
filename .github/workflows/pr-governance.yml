@@ -1,6 +1,8 @@
 name: PR Governance
 
 on:
+  pull_request:
+    types: [edited]
   pull_request_review:
     types: [submitted, dismissed]
   issue_comment:
@@ -15,6 +17,7 @@ permissions:
 jobs:
   pr-governance:
     if: >-
+      github.event_name == 'pull_request' ||
       github.event_name == 'pull_request_review' ||
       (github.event.issue.pull_request != null && startsWith(github.event.comment.body, '@codex review'))
     runs-on: ubuntu-latest
