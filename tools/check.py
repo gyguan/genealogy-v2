@@ -10,6 +10,7 @@ COMMANDS = (
     ("layout validation", [sys.executable, "tools/validate_layout.py"]),
     ("repository validation", [sys.executable, "tools/validate_repo.py"]),
     ("design validation", [sys.executable, "tools/validate_design.py"]),
+    ("machine design validation", [sys.executable, "tools/validate_design_machine.py"]),
     ("product validation", [sys.executable, "tools/validate_product.py"]),
     ("change quality validation", [sys.executable, "tools/validate_change_quality_strict.py"]),
     (

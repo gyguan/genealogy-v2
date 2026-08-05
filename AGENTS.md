@@ -6,8 +6,9 @@
 
 1. `AGENTS.md` 与 `SECURITY.md`；
 2. 当前 Change 的 `change.yaml`、`proposal.md`；
-3. 运行 `python tools/context.py <CHG-ID>`，只读取输出的版本、Capability、领域和 Decision；
-4. 本次使用的 Skill。
+3. 运行 `python tools/context.py <CHG-ID> --bundle`，优先读取最小 Context Pack；
+4. 当前 Change 的 `design.yaml`、相关 Spec 和本次使用的 Skill；
+5. 只有在 Context Pack 信息不足时，才打开完整 Capability、Domain 或 Decision 原文。
 
 不得默认加载全部 Capability。`product/capability-map.yaml` 只保存 Manifest，正式能力唯一来源是 `product/capabilities/*.yaml`。
 
@@ -30,14 +31,23 @@
 - Warning 必须在评审中解决或明确接受，高风险 Change 仍需独立人类 APPROVED。
 
 ## 需求设计契约
-- 从 `CHG-0007` 起，所有 Change 必须声明 `design_contract_version: 1`，并使用 `changes/_template/design.md`；
-- Design Frontmatter 的 Change、Capability、Spec、Domain 和 Decision 必须与正式资产完全一致；
-- 先判定 `applicability`：`required` 必须使用稳定 ID 给出可测试设计，`not-applicable` 必须写明 `N/A: <facet> - <具体原因>`；
-- 设计必须保留八个固定章节，不得用自由格式文档替代；
-- 业务规则和不变量必须同时追踪到 Spec 与 Test；每个 Spec 必须进入测试追踪矩阵；
-- `open_questions > 0`、残留 TODO/TBD/待确认或设计引用不一致时，不得批准 Spec Gate；
+- `CHG-0007` 起继续维护 Design Contract v1 的 `design.md` Frontmatter 与八个固定章节；
+- `CHG-0009` 起还必须声明 `design_machine_contract_version: 1` 并维护 `design.yaml`；
+- `design.yaml` 是引用、适用性、事实、假设、开放问题、稳定设计 ID 和 Spec/Test 追踪的机器事实源；`design.md` 负责解释流程、模型、失败、风险和取舍；
+- Design 的 Change、Capability、Spec、Domain 和 Decision 引用必须与正式资产完全一致；
+- 开始设计前先记录已确认事实 `FACT-...`、显式假设 `ASM-...` 和开放问题 `OPEN-...`；不得把 AI 推断静默写成业务事实；
+- 每个 facet 初始可以是 `review-required`，但进入 review 或批准 Spec Gate 前必须收敛为 `required` 或 `not-applicable`；
+- `required` 必须给出原因和稳定设计 ID；`not-applicable` 必须给出具体原因；
+- 业务规则、不变量、命令、约束和安全定义必须追踪到正式 Spec/Test；每个 Spec 必须进入 `design.yaml.traceability`；
+- 阻断假设未确认、存在开放问题、残留 TODO/TBD/待确认或引用不一致时，不得批准 Spec Gate；
 - 设计不得静默修改领域不变量、Accepted Decision、产品范围或安全红线；需要修改时必须建立独立 Change；
-- `tools/validate_design.py` 与 `tools/check.py` 是确定性门禁，Skill 或人工判断不得绕过。
+- `tools/validate_design.py`、`tools/validate_design_machine.py` 与 `tools/check.py` 是确定性门禁，Skill 或人工判断不得绕过。
+
+## 生成与评审分离
+- `to-spec` 负责生成 Proposal、Spec、`design.yaml` 和 `design.md`；
+- `openspec-validation` 负责完整性与确定性一致性检查；
+- `design-review` 必须由独立上下文执行，重点挑战需求理解、领域语义、遗漏、过度设计、安全和测试充分性；
+- 生成 Agent 不得把自己的解释当成独立评审结论。
 
 ## 产品规划纪律
 - Release 事实源为 `product/releases.yaml`；Capability 唯一事实源为分组文件；

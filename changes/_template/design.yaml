@@ -1,0 +1,62 @@
+version: 1
+change: CHG-0000
+status: draft
+references:
+  capabilities: []
+  specs: []
+  domains: []
+  decisions: []
+facets:
+  workflow:
+    status: review-required
+    reason: 必须根据真实用户流程判断是否适用
+    design_ids: []
+  domain_model:
+    status: review-required
+    reason: 必须根据领域概念、规则和不变量变化判断是否适用
+    design_ids: []
+  state_machine:
+    status: review-required
+    reason: 必须根据生命周期和状态迁移判断是否适用
+    design_ids: []
+  persistence:
+    status: review-required
+    reason: 必须根据数据结构、完整性和生命周期判断是否适用
+    design_ids: []
+  external_api:
+    status: review-required
+    reason: 必须根据对外契约变化判断是否适用
+    design_ids: []
+  ui:
+    status: review-required
+    reason: 必须根据用户交互变化判断是否适用
+    design_ids: []
+  events:
+    status: review-required
+    reason: 必须根据跨模块或异步协作判断是否适用
+    design_ids: []
+  migration:
+    status: review-required
+    reason: 必须根据兼容、历史数据和发布切换判断是否适用
+    design_ids: []
+  performance:
+    status: review-required
+    reason: 必须根据容量、时延和资源预算判断是否适用
+    design_ids: []
+  security_privacy:
+    status: review-required
+    reason: 所有 Change 都必须显式评估安全、隐私和审计影响
+    design_ids: []
+  module_consistency:
+    status: review-required
+    reason: 所有 Change 都必须声明模块落位和允许依赖
+    design_ids: []
+  tests_traceability:
+    status: review-required
+    reason: 所有正式 Spec 都必须追踪到设计与注册测试
+    design_ids: []
+facts: []
+assumptions: []
+open_questions: []
+definitions: []
+traceability: []

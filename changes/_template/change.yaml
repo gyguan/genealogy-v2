@@ -1,5 +1,6 @@
 version: 2
 design_contract_version: 1
+design_machine_contract_version: 1
 id: CHG-0000
 title: change-name
 change_type: engineering
