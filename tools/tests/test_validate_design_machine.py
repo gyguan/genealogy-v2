@@ -8,7 +8,7 @@ import yaml
 
 from validation_test_utils import ROOT, copy_repo, run
 
-CHANGE = "changes/CHG-0008-design-contract-v1-1"
+CHANGE = "changes/CHG-0009-design-contract-v1-1"
 
 
 class MachineDesignValidationTests(unittest.TestCase):
@@ -139,7 +139,7 @@ class DesignV11ToolingTests(unittest.TestCase):
 
     def test_context_bundle_is_machine_readable(self) -> None:
         result = subprocess.run(
-            [sys.executable, "tools/context.py", "CHG-0008", "--bundle"],
+            [sys.executable, "tools/context.py", "CHG-0009", "--bundle"],
             cwd=ROOT,
             capture_output=True,
             text=True,
@@ -147,7 +147,7 @@ class DesignV11ToolingTests(unittest.TestCase):
         )
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         bundle = yaml.safe_load(result.stdout)
-        self.assertEqual("CHG-0008", bundle["change"]["id"])
+        self.assertEqual("CHG-0009", bundle["change"]["id"])
         self.assertIn("machine_design", bundle)
         self.assertIn("global_constraints", bundle)
 
