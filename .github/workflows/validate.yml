@@ -31,6 +31,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
       - run: python tools/run_change_tests.py
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body || '' }}
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
           CHANGE_TEST_TIMEOUT_SECONDS: '300'
