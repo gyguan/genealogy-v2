@@ -256,12 +256,14 @@ class HighRiskHumanApprovalTests(unittest.TestCase):
             )
         )
 
-    def test_pr_body_edit_revalidates_profile_governance(self) -> None:
+    def test_pr_body_edit_revalidates_profile_governance_safely(self) -> None:
         text = (ROOT / ".github/workflows/pr-governance.yml").read_text(
             encoding="utf-8"
         )
-        self.assertIn("pull_request:\n    types: [edited]", text)
-        self.assertIn("github.event_name == 'pull_request'", text)
+        self.assertIn("pull_request_target:\n    types: [edited]", text)
+        self.assertIn("github.event_name == 'pull_request_target'", text)
+        self.assertIn("ref: ${{ github.event.repository.default_branch }}", text)
+        self.assertNotIn("github.event_name == 'pull_request' ||", text)
 
 
 if __name__ == "__main__":
