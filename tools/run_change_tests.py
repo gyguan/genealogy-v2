@@ -20,11 +20,26 @@ ALLOWED_RUNNERS = {
     "npm",
     "npx",
     "mvn",
-    "mvnw",
     "gradle",
-    "gradlew",
 }
+ALLOWED_WRAPPERS = {"./mvnw", "./gradlew"}
 SHELL_OPERATORS = {"|", "||", "&&", ";", ">", ">>", "<", "<<", "2>", "2>>"}
+SAFE_ENVIRONMENT_KEYS = {
+    "PATH",
+    "HOME",
+    "CI",
+    "LANG",
+    "LC_ALL",
+    "JAVA_HOME",
+    "M2_HOME",
+    "GRADLE_HOME",
+    "NODE_OPTIONS",
+    "PYTHONPATH",
+    "RUNNER_TEMP",
+    "TMPDIR",
+    "TEMP",
+    "TMP",
+}
 
 
 def resolve_change(root: Path, change_id: str) -> Path:
@@ -42,9 +57,12 @@ def validated_argv(command: str) -> list[str]:
     argv = shlex.split(command, posix=True)
     if not argv:
         raise ValueError("registered test command has no executable")
-    runner = Path(argv[0].replace("\\", "/")).name
-    if runner not in ALLOWED_RUNNERS:
-        raise ValueError(f"registered test runner {runner!r} is not allowed")
+    executable = argv[0].replace("\\", "/")
+    if "/" in executable:
+        if executable not in ALLOWED_WRAPPERS:
+            raise ValueError(f"registered test executable path {executable!r} is not allowed")
+    elif executable not in ALLOWED_RUNNERS:
+        raise ValueError(f"registered test runner {executable!r} is not allowed")
     for token in argv:
         if token in SHELL_OPERATORS or "$(" in token or "`" in token:
             raise ValueError("registered test command contains a shell operator")
@@ -87,18 +105,31 @@ def collect_commands(root: Path, change_ids: Iterable[str]) -> list[tuple[str, s
     return result
 
 
+def safe_environment(source: dict[str, str] | None = None) -> dict[str, str]:
+    values = source or dict(os.environ)
+    return {key: value for key, value in values.items() if key in SAFE_ENVIRONMENT_KEYS}
+
+
 def execute_commands(
     commands: Iterable[tuple[str, str, list[str]]],
     *,
     root: Path = ROOT,
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+    environment: dict[str, str] | None = None,
 ) -> list[str]:
     failures: list[str] = []
+    env = safe_environment(environment)
     for change_id, test_id, argv in commands:
         rendered = shlex.join(argv)
         print(f"==> {change_id} {test_id}: {rendered}", flush=True)
         try:
-            result = subprocess.run(argv, cwd=root, check=False, timeout=timeout_seconds)
+            result = subprocess.run(
+                argv,
+                cwd=root,
+                check=False,
+                timeout=timeout_seconds,
+                env=env,
+            )
         except subprocess.TimeoutExpired:
             failures.append(f"{change_id}/{test_id}: timed out after {timeout_seconds}s")
             continue
