@@ -278,6 +278,14 @@ def validate_definitions(
             fail(f"{rel(path)}: {kind} definition {definition_id} must link specs")
         if review_ready and kind in TEST_REQUIRED_KINDS and not definition_tests:
             fail(f"{rel(path)}: {kind} definition {definition_id} must link tests")
+        if review_ready:
+            for test_id in sorted(definition_tests & set(tests)):
+                uncovered = sorted(definition_specs - tests[test_id])
+                if uncovered:
+                    fail(
+                        f"{rel(path)}: definition {definition_id} test {test_id} does not cover "
+                        f"definition specs: {', '.join(uncovered)}"
+                    )
     return result
 
 
