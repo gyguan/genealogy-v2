@@ -2,7 +2,7 @@
 
 ## TASK-GOV-009 修复 Decision 类型与历史路径范围校验
 - Specs: SPEC-GOV-BOUNDARY-001
-- Status: in-progress
+- Status: completed
 - Depends on: none
 - Tests: TEST-GOV-BOUNDARY-001, TEST-GOV-BOUNDARY-SEC-001
 - Evidence: evidence/TASK-GOV-009.md
@@ -13,7 +13,7 @@
 
 ## TASK-GOV-010 屏蔽 strict Spec 中的 fenced 示例
 - Specs: SPEC-GOV-BOUNDARY-002
-- Status: in-progress
+- Status: completed
 - Depends on: none
 - Tests: TEST-GOV-BOUNDARY-002, TEST-GOV-BOUNDARY-SEC-001
 - Evidence: evidence/TASK-GOV-010.md
@@ -24,7 +24,7 @@
 
 ## TASK-GOV-011 修复 Design CommonMark 段落边界
 - Specs: SPEC-GOV-BOUNDARY-003
-- Status: in-progress
+- Status: completed
 - Depends on: none
 - Tests: TEST-GOV-BOUNDARY-003, TEST-GOV-BOUNDARY-SEC-001
 - Evidence: evidence/TASK-GOV-011.md
