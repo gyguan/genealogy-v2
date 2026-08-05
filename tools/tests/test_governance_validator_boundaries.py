@@ -3,7 +3,10 @@ from __future__ import annotations
 import sys
 import unittest
 
-from validation_test_utils import ROOT, copy_repo, run
+try:
+    from .validation_test_utils import ROOT, copy_repo, run
+except ImportError:  # unittest discovery imports this file as a top-level module
+    from validation_test_utils import ROOT, copy_repo, run
 
 sys.path.insert(0, str(ROOT / "tools"))
 from diagnostics import Reporter  # noqa: E402
