@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -9,11 +10,15 @@ import urllib.error
 import urllib.request
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 STATUS_CONTEXT = "pr-governance"
+CHANGE_ID_PATTERN = re.compile(r"\bCHG-\d{4}\b")
+CHANGE_DECLARATION_PATTERN = re.compile(r"(?im)^-\s*Change IDs?\s*[:：]\s*(.+?)\s*$")
+CHANGE_PATH_PATTERN = re.compile(r"^changes/(CHG-\d{4})-[^/]+/change\.yaml$")
 
 
 def api(url: str, token: str, method: str = "GET", body=None):
@@ -233,6 +238,85 @@ def review_evidence(
     return False, "No configured independent review for the current head."
 
 
+def extract_change_ids(body: str) -> set[str]:
+    result: set[str] = set()
+    for declaration in CHANGE_DECLARATION_PATTERN.findall(body or ""):
+        result.update(CHANGE_ID_PATTERN.findall(declaration))
+    return result
+
+
+def decode_contents(payload: object) -> str:
+    if not isinstance(payload, dict) or payload.get("encoding") != "base64":
+        raise TypeError("GitHub contents response must contain base64 content")
+    content = payload.get("content")
+    if not isinstance(content, str):
+        raise TypeError("GitHub contents response has no content")
+    return base64.b64decode(content).decode("utf-8")
+
+
+def change_paths(repo: str, number: int, token: str, change_ids: set[str]) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for item in rest_pages(f"https://api.github.com/repos/{repo}/pulls/{number}/files", token):
+        path = item.get("filename")
+        match = CHANGE_PATH_PATTERN.fullmatch(path) if isinstance(path, str) else None
+        if match and match.group(1) in change_ids:
+            result[match.group(1)] = path
+    for change_id in change_ids - set(result):
+        matches = sorted((ROOT / "changes").glob(f"{change_id}-*/change.yaml"))
+        if len(matches) == 1:
+            result[change_id] = str(matches[0].relative_to(ROOT))
+    return result
+
+
+def change_profiles(
+    repo: str,
+    number: int,
+    token: str,
+    head_sha: str,
+    body: str,
+) -> dict[str, str]:
+    change_ids = extract_change_ids(body)
+    if not change_ids:
+        raise ValueError("PR body must declare at least one Change")
+    paths = change_paths(repo, number, token, change_ids)
+    missing = sorted(change_ids - set(paths))
+    if missing:
+        raise ValueError(f"cannot resolve Change metadata for: {', '.join(missing)}")
+    result: dict[str, str] = {}
+    for change_id, path in paths.items():
+        payload = api(
+            f"https://api.github.com/repos/{repo}/contents/{quote(path, safe='/')}?ref={quote(head_sha, safe='')}",
+            token,
+        )
+        value = yaml.safe_load(decode_contents(payload))
+        profile = value.get("change_profile") if isinstance(value, dict) else None
+        if not isinstance(profile, str):
+            raise ValueError(f"{change_id} has no valid change_profile")
+        result[change_id] = profile
+    return result
+
+
+def is_human_review(review: dict, author: str, ai_actors: set[str]) -> bool:
+    user = review.get("user") if isinstance(review, dict) else None
+    login = normalized_login(user.get("login") if isinstance(user, dict) else None)
+    user_type = user.get("type") if isinstance(user, dict) else None
+    return bool(login) and login != author and login not in ai_actors and user_type != "Bot"
+
+
+def has_current_head_human_approval(
+    reviews: list[dict],
+    current_head: str,
+    author: str,
+    ai_actors: set[str],
+) -> bool:
+    current = [
+        review
+        for review in reviews
+        if review.get("commit_id") == current_head and is_human_review(review, author, ai_actors)
+    ]
+    return any(review.get("state") == "APPROVED" for review in latest_reviews_by_actor(current))
+
+
 def main() -> int:
     token = os.getenv("GITHUB_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
@@ -288,6 +372,31 @@ def main() -> int:
                 print(f"Trigger a reaction-only review with the exact command: {exact_command}")
                 return 1
             time.sleep(poll_seconds)
+
+        profiles = change_profiles(
+            repo,
+            number,
+            token,
+            current_head,
+            pull_request.get("body") or "",
+        )
+        high_risk = sorted(
+            change_id for change_id, profile in profiles.items() if profile == "high-risk"
+        )
+        high_risk_rule = config.get("high_risk", {})
+        if high_risk and high_risk_rule.get("require_human_approval", True):
+            reviews = rest_pages(f"https://api.github.com/repos/{repo}/pulls/{number}/reviews", token)
+            ai_actors = {
+                normalized_login(value)
+                for value in config.get("review", {}).get("actors", [])
+            }
+            if not has_current_head_human_approval(reviews, current_head, author, ai_actors):
+                publish_status(repo, current_head, token, "failure", "High-risk Change needs human approval")
+                print(
+                    "High-risk Change(s) require a non-author human APPROVED review on the current head: "
+                    + ", ".join(high_risk)
+                )
+                return 1
 
         if config.get("review", {}).get("require_resolved_threads"):
             threads = unresolved_threads(repo, number, token)
