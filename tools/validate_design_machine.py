@@ -8,7 +8,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 ERRORS: list[str] = []
-REQUIRED_FROM_CHANGE_NUMBER = 8
+REQUIRED_FROM_CHANGE_NUMBER = 9
 ACTIVE_STATES = {"review", "approved", "implementing", "completed"}
 APPROVED_STATES = {"approved", "implementing", "completed"}
 DESIGN_STATUSES = {"draft", "review", "approved"}
@@ -407,7 +407,7 @@ def validate_change(change_dir: Path) -> None:
         return
     number, version = change_number(change.get("id")), change.get("design_machine_contract_version")
     if number is not None and number >= REQUIRED_FROM_CHANGE_NUMBER and not is_version_one(version):
-        fail(f"{rel(change_path)}: CHG-0008 and later require design_machine_contract_version: integer 1")
+        fail(f"{rel(change_path)}: CHG-0009 and later require design_machine_contract_version: integer 1")
         return
     if not is_version_one(version):
         return
