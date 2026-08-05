@@ -32,7 +32,7 @@
 
 ## 需求设计契约
 - `CHG-0007` 起继续维护 Design Contract v1 的 `design.md` Frontmatter 与八个固定章节；
-- `CHG-0008` 起还必须声明 `design_machine_contract_version: 1` 并维护 `design.yaml`；
+- `CHG-0009` 起还必须声明 `design_machine_contract_version: 1` 并维护 `design.yaml`；
 - `design.yaml` 是引用、适用性、事实、假设、开放问题、稳定设计 ID 和 Spec/Test 追踪的机器事实源；`design.md` 负责解释流程、模型、失败、风险和取舍；
 - Design 的 Change、Capability、Spec、Domain 和 Decision 引用必须与正式资产完全一致；
 - 开始设计前先记录已确认事实 `FACT-...`、显式假设 `ASM-...` 和开放问题 `OPEN-...`；不得把 AI 推断静默写成业务事实；
