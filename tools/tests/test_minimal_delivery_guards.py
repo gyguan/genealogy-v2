@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 try:
     from .validation_test_utils import copy_repo
@@ -14,6 +15,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from diagnostics import Reporter  # noqa: E402
 from run_change_tests import safe_environment, validated_argv  # noqa: E402
+import validate_change_quality_strict as quality_strict  # noqa: E402
 from validate_change_quality_strict import placeholder_identifier  # noqa: E402
 from validate_pr import has_current_head_human_approval  # noqa: E402
 from validate_pr_change_strict import validate_exact_asset_scope  # noqa: E402
@@ -163,6 +165,32 @@ class PlaceholderIdentifierTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertTrue(placeholder_identifier(value))
         self.assertFalse(placeholder_identifier("SPEC-GOV-GUARD-001"))
+
+    def test_non_strict_review_assets_still_reject_placeholder_ids(self) -> None:
+        root = copy_repo(self)
+        path = root / "changes/CHG-9999-legacy/specs/legacy.md"
+        path.parent.mkdir(parents=True)
+        path.write_text(
+            "## SPEC-REPLACE-ME Legacy requirement\n\n"
+            "Meaningful legacy requirement body.\n\n"
+            "#### Scenario SCN-EXAMPLE-01 Legacy scenario\n\n"
+            "- Given: input\n- When: action\n- Then: result\n",
+            encoding="utf-8",
+        )
+        reporter = Reporter()
+        with patch.object(quality_strict.core, "ROOT", root):
+            quality_strict.parse_specs(path, reporter, strict=False)
+            quality_strict.reject_placeholder_id(
+                "TEST-TEMPLATE-001",
+                reporter,
+                root / "changes/CHG-9999-legacy/tests.yaml",
+                strict=False,
+            )
+        messages = [item.message for item in reporter.errors if item.code == "ID-PLACEHOLDER-001"]
+        self.assertEqual(3, len(messages), reporter.render("test"))
+        self.assertTrue(any("SPEC-REPLACE-ME" in message for message in messages))
+        self.assertTrue(any("SCN-EXAMPLE-01" in message for message in messages))
+        self.assertTrue(any("TEST-TEMPLATE-001" in message for message in messages))
 
 
 class HighRiskHumanApprovalTests(unittest.TestCase):
