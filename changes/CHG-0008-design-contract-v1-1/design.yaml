@@ -60,7 +60,7 @@ facets:
   tests_traceability:
     status: required
     reason: 每个正式 Spec 必须追踪到机器定义和注册测试
-    design_ids: []
+    design_ids: [TRACE-GOV-V11-001]
 facts:
   - id: FACT-GOV-V11-001
     statement: Design Contract v1 已在 CHG-0007 中作为强制设计门禁合入
@@ -127,19 +127,26 @@ definitions:
     basis: [FACT-GOV-V11-003, SPEC-GOV-V11-002]
     specs: [SPEC-GOV-V11-002]
     tests: [TEST-DESIGN-V11-003, TEST-DESIGN-V11-SEC-001]
+  - id: TRACE-GOV-V11-001
+    kind: traceability
+    section: 测试 Seam
+    summary: 每个正式 Spec 必须由机器 Definition 和 tests.yaml 注册测试双向覆盖
+    basis: [SPEC-GOV-V11-001, SPEC-GOV-V11-002, SPEC-GOV-V11-003, SPEC-GOV-V11-004, SPEC-GOV-V11-005]
+    specs: [SPEC-GOV-V11-001, SPEC-GOV-V11-002, SPEC-GOV-V11-003, SPEC-GOV-V11-004, SPEC-GOV-V11-005]
+    tests: [TEST-DESIGN-V11-001, TEST-DESIGN-V11-002, TEST-DESIGN-V11-003, TEST-DESIGN-V11-004, TEST-DESIGN-V11-005, TEST-DESIGN-V11-SEC-001]
 traceability:
   - spec: SPEC-GOV-V11-001
-    design_ids: [MODULE-GOV-V11-001, MODULE-GOV-V11-002, MIG-GOV-V11-001]
+    design_ids: [MODULE-GOV-V11-001, MODULE-GOV-V11-002, MIG-GOV-V11-001, TRACE-GOV-V11-001]
     tests: [TEST-DESIGN-V11-001, TEST-DESIGN-V11-002, TEST-DESIGN-V11-005]
   - spec: SPEC-GOV-V11-002
-    design_ids: [SEC-GOV-V11-001]
+    design_ids: [SEC-GOV-V11-001, TRACE-GOV-V11-001]
     tests: [TEST-DESIGN-V11-003, TEST-DESIGN-V11-SEC-001]
   - spec: SPEC-GOV-V11-003
-    design_ids: [MODULE-GOV-V11-002]
+    design_ids: [MODULE-GOV-V11-002, TRACE-GOV-V11-001]
     tests: [TEST-DESIGN-V11-002, TEST-DESIGN-V11-003]
   - spec: SPEC-GOV-V11-004
-    design_ids: [FLOW-GOV-V11-001, MODULE-GOV-V11-003, MODULE-GOV-V11-004]
+    design_ids: [FLOW-GOV-V11-001, MODULE-GOV-V11-003, MODULE-GOV-V11-004, TRACE-GOV-V11-001]
     tests: [TEST-DESIGN-V11-004, TEST-DESIGN-V11-005]
   - spec: SPEC-GOV-V11-005
-    design_ids: [MODULE-GOV-V11-001]
+    design_ids: [MODULE-GOV-V11-001, TRACE-GOV-V11-001]
     tests: [TEST-DESIGN-V11-001, TEST-DESIGN-V11-005, TEST-DESIGN-V11-SEC-001]
