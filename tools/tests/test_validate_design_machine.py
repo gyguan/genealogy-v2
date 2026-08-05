@@ -76,6 +76,17 @@ class MachineDesignValidationTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("does not cover spec", result.stdout)
 
+    def test_definition_test_must_cover_definition_specs(self) -> None:
+        root = copy_repo(self)
+        path = root / CHANGE / "design.yaml"
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        security = next(item for item in data["definitions"] if item["id"] == "SEC-GOV-V11-001")
+        security["tests"] = ["TEST-DESIGN-V11-004"]
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        result = run(root, "tools/validate_design_machine.py")
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("does not cover definition specs", result.stdout)
+
     def test_security_definition_requires_spec(self) -> None:
         root = copy_repo(self)
         path = root / CHANGE / "design.yaml"
