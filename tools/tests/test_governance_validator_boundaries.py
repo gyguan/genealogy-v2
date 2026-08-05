@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 import unittest
 
+import yaml
+
 try:
     from .validation_test_utils import ROOT, copy_repo, run
 except ImportError:  # unittest discovery imports this file as a top-level module
@@ -31,6 +33,16 @@ def decision_text(decision_id: str, decision_type: str) -> str:
         "effective_at: 2026-08-05\n"
         "---\n\n"
         "# Decision\n"
+    )
+
+
+def declare_decision(root, change_id: str, decision_id: str) -> None:
+    path = next((root / "changes").glob(f"{change_id}-*/change.yaml"))
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data["affected_decisions"] = [decision_id]
+    path.write_text(
+        yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
     )
 
 
@@ -71,6 +83,7 @@ class DecisionScopeBoundaryTests(unittest.TestCase):
 
     def test_renamed_decision_validates_both_base_and_head_metadata(self) -> None:
         root = copy_repo(self)
+        declare_decision(root, "CHG-0004", "DEC-9999")
         new_path = root / "decisions/DEC-9999-new-name.md"
         new_path.write_text(decision_text("DEC-9999", "product"), encoding="utf-8")
         renamed = {
