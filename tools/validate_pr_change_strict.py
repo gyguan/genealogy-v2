@@ -15,7 +15,9 @@ from diagnostics import Reporter
 FRONTMATTER_PATTERN = re.compile(
     r"\A---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|\Z)"
 )
-FORMAL_DECISION_PATTERN = re.compile(r"^decisions/DEC-\d{4}-[^/]+\.md$")
+FORMAL_DECISION_PATTERN = re.compile(r"^decisions/(DEC-\d{4})-[^/]+\.md$")
+FORMAL_DOMAIN_PATTERN = re.compile(r"^domains/([a-z0-9]+(?:-[a-z0-9]+)*)\.md$")
+CAPABILITY_FILE_PATTERN = re.compile(r"^product/capabilities/[^/]+\.yaml$")
 DECISION_TYPE_TO_CHANGES = {
     "product": {"product"},
     "domain": {"domain"},
@@ -82,30 +84,30 @@ def changed_file_entries(files: list[dict] | list[str]) -> list[dict[str, Any]]:
     return result
 
 
-def read_decision_text(
+def read_repository_text(
     root: Path,
-    entry: dict[str, Any],
+    path: str,
+    source: str,
     reporter: Reporter,
     *,
     repo: str | None,
     token: str | None,
     base_sha: str | None,
+    embedded: str | None = None,
+    diagnostic: str = "PR-ASSET-READ-001",
 ) -> str | None:
-    path = entry["path"]
-    if entry.get("source") == "head":
+    if source == "head":
         try:
             return (root / path).read_text(encoding="utf-8")
         except OSError as exc:
-            reporter.error("PR-DECISION-001", f"cannot read Decision metadata: {exc}", path)
+            reporter.error(diagnostic, f"cannot read current asset: {exc}", path)
             return None
-
-    embedded = entry.get("base_content")
     if isinstance(embedded, str):
         return embedded
     if not all((repo, token, base_sha)):
         reporter.error(
-            "PR-DECISION-001",
-            "cannot read historical Decision metadata without repository, token and base SHA",
+            diagnostic,
+            "cannot read historical asset without repository, token and base SHA",
             path,
         )
         return None
@@ -116,8 +118,30 @@ def read_decision_text(
         )
         return decode_contents_payload(payload)
     except Exception as exc:  # normalized into a deterministic diagnostic
-        reporter.error("PR-DECISION-001", f"cannot read historical Decision metadata: {exc}", path)
+        reporter.error(diagnostic, f"cannot read historical asset: {exc}", path)
         return None
+
+
+def read_decision_text(
+    root: Path,
+    entry: dict[str, Any],
+    reporter: Reporter,
+    *,
+    repo: str | None,
+    token: str | None,
+    base_sha: str | None,
+) -> str | None:
+    return read_repository_text(
+        root,
+        entry["path"],
+        entry.get("source") or "head",
+        reporter,
+        repo=repo,
+        token=token,
+        base_sha=base_sha,
+        embedded=entry.get("base_content"),
+        diagnostic="PR-DECISION-001",
+    )
 
 
 def decision_change_types(
@@ -178,6 +202,141 @@ def required_change_types(
     return {"engineering", "domain", "security"}
 
 
+def declared_values(metadata: dict[str, dict], field: str) -> set[str]:
+    result: set[str] = set()
+    for value in metadata.values():
+        items = value.get(field)
+        if isinstance(items, list):
+            result.update(item for item in items if isinstance(item, str))
+    return result
+
+
+def capability_records(text: str, path: str, reporter: Reporter) -> dict[str, Any]:
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        reporter.error("PR-CAPABILITY-READ-001", f"invalid capability YAML: {exc}", path)
+        return {}
+    group = data.get("group") if isinstance(data, dict) else None
+    items = group.get("capabilities") if isinstance(group, dict) else None
+    if not isinstance(items, list):
+        reporter.error("PR-CAPABILITY-READ-002", "capability file needs group.capabilities list", path)
+        return {}
+    result: dict[str, Any] = {}
+    for item in items:
+        capability_id = item.get("id") if isinstance(item, dict) else None
+        if isinstance(capability_id, str):
+            result[capability_id] = item
+    return result
+
+
+def changed_capability_ids(
+    root: Path,
+    item: dict[str, Any],
+    reporter: Reporter,
+    *,
+    repo: str | None,
+    token: str | None,
+    base_sha: str | None,
+) -> set[str]:
+    status = item.get("status") or "modified"
+    head_path = item.get("filename")
+    base_path = item.get("previous_filename") if status == "renamed" else head_path
+    head: dict[str, Any] = {}
+    base: dict[str, Any] = {}
+
+    if status != "removed" and isinstance(head_path, str) and CAPABILITY_FILE_PATTERN.fullmatch(head_path):
+        text = read_repository_text(
+            root,
+            head_path,
+            "head",
+            reporter,
+            repo=repo,
+            token=token,
+            base_sha=base_sha,
+            diagnostic="PR-CAPABILITY-READ-001",
+        )
+        if text is not None:
+            head = capability_records(text, head_path, reporter)
+
+    if status != "added" and isinstance(base_path, str) and CAPABILITY_FILE_PATTERN.fullmatch(base_path):
+        text = read_repository_text(
+            root,
+            base_path,
+            "base",
+            reporter,
+            repo=repo,
+            token=token,
+            base_sha=base_sha,
+            embedded=item.get("base_content"),
+            diagnostic="PR-CAPABILITY-READ-001",
+        )
+        if text is not None:
+            base = capability_records(text, base_path, reporter)
+
+    return {
+        capability_id
+        for capability_id in set(head) | set(base)
+        if head.get(capability_id) != base.get(capability_id)
+    }
+
+
+def validate_exact_asset_scope(
+    root: Path,
+    files: list[dict] | list[str],
+    metadata: dict[str, dict],
+    reporter: Reporter,
+    *,
+    repo: str | None,
+    token: str | None,
+    base_sha: str | None,
+) -> None:
+    domains = declared_values(metadata, "affected_domains")
+    decisions = declared_values(metadata, "affected_decisions")
+    capabilities = declared_values(metadata, "capabilities")
+
+    seen_paths: set[str] = set()
+    for entry in changed_file_entries(files):
+        path = entry["path"]
+        if path in seen_paths:
+            continue
+        seen_paths.add(path)
+        domain_match = FORMAL_DOMAIN_PATTERN.fullmatch(path)
+        if domain_match and domain_match.group(1) not in domains:
+            reporter.error(
+                "PR-DOMAIN-SCOPE-001",
+                f"changed Domain {domain_match.group(1)} is not declared in affected_domains",
+                path,
+            )
+        decision_match = FORMAL_DECISION_PATTERN.fullmatch(path)
+        if decision_match and decision_match.group(1) not in decisions:
+            reporter.error(
+                "PR-DECISION-SCOPE-001",
+                f"changed Decision {decision_match.group(1)} is not declared in affected_decisions",
+                path,
+            )
+
+    for item in core.normalize_changed_files(files):
+        paths = [item.get("filename"), item.get("previous_filename")]
+        if not any(isinstance(path, str) and CAPABILITY_FILE_PATTERN.fullmatch(path) for path in paths):
+            continue
+        changed = changed_capability_ids(
+            root,
+            item,
+            reporter,
+            repo=repo,
+            token=token,
+            base_sha=base_sha,
+        )
+        undeclared = sorted(changed - capabilities)
+        if undeclared:
+            reporter.error(
+                "PR-CAPABILITY-SCOPE-001",
+                f"changed Capability IDs are not declared in capabilities: {', '.join(undeclared)}",
+                item.get("filename"),
+            )
+
+
 def validate_declared_scope(
     root: Path,
     body: str,
@@ -232,6 +391,16 @@ def validate_declared_scope(
                 f"file requires one of Change types {sorted(required)}, declared types are {sorted(declared_types)}",
                 path,
             )
+
+    validate_exact_asset_scope(
+        root,
+        changed_files,
+        metadata,
+        reporter,
+        repo=repo,
+        token=token,
+        base_sha=base_sha,
+    )
 
     for change_id, value in metadata.items():
         state = value.get("status")
