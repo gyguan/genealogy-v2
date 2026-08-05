@@ -59,6 +59,14 @@ class RegisteredTestCommandTests(unittest.TestCase):
         )
         self.assertEqual({"PATH": "/usr/bin", "HOME": "/tmp/home"}, env)
 
+    def test_workflow_does_not_give_token_to_registered_test_parent(self) -> None:
+        text = (ROOT / ".github/workflows/validate.yml").read_text(encoding="utf-8")
+        marker = "- run: python tools/run_change_tests.py"
+        self.assertIn(marker, text)
+        block = text.split(marker, 1)[1].split("\n      - ", 1)[0]
+        self.assertIn("PR_BODY:", block)
+        self.assertNotIn("GITHUB_TOKEN", block)
+
 
 class ExactAffectedScopeTests(unittest.TestCase):
     def metadata(self, **values):
