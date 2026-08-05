@@ -47,7 +47,10 @@ def reject_placeholder_id(
     *,
     strict: bool = True,
 ) -> None:
-    if strict and placeholder_identifier(identifier):
+    # Placeholder IDs are lifecycle gates, not strict-policy format rules.
+    # Keep the argument for call compatibility while enforcing the rule for
+    # every Change that the active Change validator has admitted for review.
+    if placeholder_identifier(identifier):
         reporter.error(
             "ID-PLACEHOLDER-001",
             f"template identifier {identifier} must be replaced before review",
@@ -149,6 +152,17 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
             reporter.error("SPEC-ID-001", f"duplicate Spec id {spec_id}", core.rel(path))
         spec_ids.add(spec_id)
 
+        scenarios = SCENARIO_PATTERN.findall(block)
+        for scenario_id in scenarios:
+            reject_placeholder_id(scenario_id, reporter, path, strict=strict)
+            if scenario_id in scenario_ids:
+                reporter.error(
+                    "SPEC-SCENARIO-002",
+                    f"duplicate Scenario id {scenario_id}",
+                    core.rel(path),
+                )
+            scenario_ids.add(scenario_id)
+
         if strict:
             requirement_match = re.search(
                 r"^####[ \t]+Requirement[ \t]*$([\s\S]*?)(?=^####[ \t]+Scenario[ \t]+SCN-|\Z)",
@@ -164,7 +178,6 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
                     core.rel(path),
                 )
 
-            scenarios = SCENARIO_PATTERN.findall(block)
             if not scenarios:
                 reporter.error(
                     "SPEC-SCENARIO-001",
@@ -172,14 +185,6 @@ def parse_specs(path: Path, reporter: Reporter, strict: bool) -> tuple[set[str],
                     core.rel(path),
                 )
             for scenario_id in scenarios:
-                reject_placeholder_id(scenario_id, reporter, path, strict=strict)
-                if scenario_id in scenario_ids:
-                    reporter.error(
-                        "SPEC-SCENARIO-002",
-                        f"duplicate Scenario id {scenario_id}",
-                        core.rel(path),
-                    )
-                scenario_ids.add(scenario_id)
                 scenario_match = re.search(
                     rf"^####[ \t]+Scenario[ \t]+{re.escape(scenario_id)}(?:[ \t]+[^\r\n]+)?[ \t]*$([\s\S]*?)(?=^####[ \t]+Scenario[ \t]+SCN-|\Z)",
                     block,
