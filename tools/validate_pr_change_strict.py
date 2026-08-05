@@ -67,6 +67,11 @@ def changed_file_entries(files: list[dict] | list[str]) -> list[dict[str, Any]]:
         current["path"] = filename
         current["source"] = "base" if status == "removed" else "head"
         entries.append(current)
+        if status == "modified" and FORMAL_DECISION_PATTERN.fullmatch(filename):
+            old = dict(item)
+            old["path"] = filename
+            old["source"] = "base"
+            entries.append(old)
         if status == "renamed":
             previous = item.get("previous_filename")
             if isinstance(previous, str):
