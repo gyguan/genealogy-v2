@@ -142,17 +142,15 @@ def execute_commands(
 
 
 def main() -> int:
-    token = os.getenv("GITHUB_TOKEN")
-    repo = os.getenv("GITHUB_REPOSITORY")
     number_text = os.getenv("PR_NUMBER")
-    if not all((token, repo, number_text)):
+    if not number_text:
         print("Registered Change tests skipped outside pull request.")
         return 0
 
     try:
-        number = int(number_text)
-        pull_request = pr_change.api(f"https://api.github.com/repos/{repo}/pulls/{number}", token)
-        change_ids = pr_change.extract_change_ids(pull_request.get("body") or "")
+        int(number_text)
+        body = os.getenv("PR_BODY") or ""
+        change_ids = pr_change.extract_change_ids(body)
         if not change_ids:
             raise ValueError("PR body must declare at least one Change before tests can run")
         timeout_seconds = max(
