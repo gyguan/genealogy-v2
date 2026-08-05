@@ -1,0 +1,37 @@
+version: 2
+design_contract_version: 1
+id: CHG-0008
+title: governance-validator-boundaries
+change_type: governance
+change_profile: standard
+quality_policy: strict
+status: implementing
+issue:
+  repository: gyguan/genealogy-v2
+  number: 13
+capabilities: []
+affected_domains: []
+affected_decisions: []
+gates:
+  spec_review:
+    status: approved
+    approved_by: gyguan
+    approved_at: '2026-08-05T08:55:00+08:00'
+    source: github-issue
+    reference: issue-13
+    evidence: evidence/spec-review.md
+  implementation_approval:
+    status: approved
+    approved_by: gyguan
+    approved_at: '2026-08-05T08:55:00+08:00'
+    source: github-issue
+    reference: issue-13
+    evidence: evidence/implementation-approval.md
+  release_approval:
+    status: blocked
+    approved_by: null
+    approved_at: null
+    source: null
+    reference: null
+    evidence: null
+cancellation_reason: null
