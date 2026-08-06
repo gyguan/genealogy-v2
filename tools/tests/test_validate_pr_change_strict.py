@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 import unittest
 
+import yaml
+
 from validation_test_utils import ROOT, copy_repo
 
 sys.path.insert(0, str(ROOT / "tools"))
@@ -29,13 +31,30 @@ class StrictPullRequestScopeTests(unittest.TestCase):
         )
         return path
 
-    def test_product_change_can_modify_product_decision(self) -> None:
+    def declare_decision(self, root, change_id: str) -> None:
+        path = next((root / "changes").glob(f"{change_id}-*/change.yaml"))
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["affected_decisions"] = ["DEC-9999"]
+        path.write_text(
+            yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
+            encoding="utf-8",
+        )
+
+    def test_product_change_can_modify_declared_product_decision(self) -> None:
         root = copy_repo(self)
         path = self.write_product_decision(root)
+        self.declare_decision(root, "CHG-0004")
         reporter = Reporter()
         validate_declared_scope(root, "- Change ID：CHG-0004", [path], reporter)
         self.assertFalse(reporter.errors, reporter.render("test"))
         self.assertEqual({"product"}, required_change_types(root, path, Reporter()))
+
+    def test_product_change_cannot_modify_undeclared_product_decision(self) -> None:
+        root = copy_repo(self)
+        path = self.write_product_decision(root)
+        reporter = Reporter()
+        validate_declared_scope(root, "- Change ID：CHG-0004", [path], reporter)
+        self.assertTrue(any(item.code == "PR-DECISION-SCOPE-001" for item in reporter.errors))
 
     def test_governance_change_cannot_modify_product_decision(self) -> None:
         root = copy_repo(self)

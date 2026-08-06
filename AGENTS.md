@@ -20,6 +20,7 @@
 - 产品、领域、安全必须 high-risk；治理不得 lightweight；
 - 使用 `new_change.py` 参数化生成，不手工复制模板；
 - 新 Change 默认使用 `quality_policy: strict`，并维护 `tests.yaml`；
+- PR 中只执行 Body 明确声明 Change 的注册测试，不重放全部历史 Change；
 - Task 按可验证纵向行为拆分，使用最少可独立交付切片；
 - 统一执行 `python tools/check.py`。
 
@@ -28,7 +29,7 @@
 - Warning 用于启发式风险和历史格式迁移，不直接替代 Reviewer 决策；
 - Review-only 用于业务正确性、领域语义、方案取舍、风险接受和测试充分性；
 - 不得为了自动化而让 Python、规则扫描或 LLM 自动裁决 Review-only 问题；
-- Warning 必须在评审中解决或明确接受，高风险 Change 仍需独立人类 APPROVED。
+- Warning 必须在评审中解决或明确接受；lightweight、standard 保持当前 Head Codex Review，high-risk 还必须获得非作者人类在当前 Head 的 APPROVED。
 
 ## 需求设计契约
 - `CHG-0007` 起继续维护 Design Contract v1 的 `design.md` Frontmatter 与八个固定章节；
@@ -39,7 +40,7 @@
 - 每个 facet 初始可以是 `review-required`，但进入 review 或批准 Spec Gate 前必须收敛为 `required` 或 `not-applicable`；
 - `required` 必须给出原因和稳定设计 ID；`not-applicable` 必须给出具体原因；
 - 业务规则、不变量、命令、约束和安全定义必须追踪到正式 Spec/Test；每个 Spec 必须进入 `design.yaml.traceability`；
-- 阻断假设未确认、存在开放问题、残留 TODO/TBD/待确认或引用不一致时，不得批准 Spec Gate；
+- 阻断假设未确认、存在开放问题、残留 TODO/TBD/待确认、模板占位 ID 或引用不一致时，不得进入评审态；
 - 设计不得静默修改领域不变量、Accepted Decision、产品范围或安全红线；需要修改时必须建立独立 Change；
 - `tools/validate_design.py`、`tools/validate_design_machine.py` 与 `tools/check.py` 是确定性门禁，Skill 或人工判断不得绕过。
 
@@ -59,7 +60,9 @@
 - 当前 Head SHA 必须获得独立 Review；新提交后旧 Review 失效；
 - 触发 Codex 时使用精确命令 `@codex review <40位Head SHA>`；若 Codex 仅以 👍 表示无意见，该反应必须发生在这条服务器记录的 Head 绑定命令之后；
 - 所有有效 Review Thread 必须解决或明确接受；
+- PR 修改正式 Domain、Decision 或 Capability 时，实际变化 ID 必须在 Change 影响范围中声明；
 - Gate 记录来源、引用、审批人和证据；
+- Release Evidence 绑定最终 PR Head、Repository Validation、PR Governance 和注册测试结果，不要求合入前填写尚未产生的 Merge SHA；满足条件后可在同一个实现 PR 中更新 completed；
 - CI 通过不替代 Standards/Spec 双轴评审；
 - 合入前运行 `python tools/check.py`。
 

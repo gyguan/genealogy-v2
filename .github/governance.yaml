@@ -10,3 +10,7 @@ review:
   accept_positive_reaction: true
   require_current_head: true
   require_resolved_threads: true
+high_risk:
+  require_human_approval: true
+  accepted_states:
+  - APPROVED

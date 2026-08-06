@@ -1,0 +1,154 @@
+version: 1
+change: CHG-0010
+status: approved
+references:
+  capabilities: []
+  specs:
+    - SPEC-GOV-MIN-001
+    - SPEC-GOV-MIN-002
+    - SPEC-GOV-MIN-003
+    - SPEC-GOV-MIN-004
+    - SPEC-GOV-MIN-005
+  domains: []
+  decisions: []
+facets:
+  workflow:
+    status: required
+    reason: PR Validation 新增注册测试执行与 Profile 感知 Review
+    design_ids: [FLOW-GOV-MIN-001]
+  domain_model:
+    status: not-applicable
+    reason: 本 Change 不修改族谱领域模型、规则或不变量
+    design_ids: []
+  state_machine:
+    status: not-applicable
+    reason: 继续使用既有 Change、Gate 和 PR Review 状态
+    design_ids: []
+  persistence:
+    status: not-applicable
+    reason: 本 Change 不新增业务数据库或持久化数据结构
+    design_ids: []
+  external_api:
+    status: not-applicable
+    reason: 只复用既有 GitHub Pull Request 和 Contents API
+    design_ids: []
+  ui:
+    status: not-applicable
+    reason: 本 Change 不提供用户界面
+    design_ids: []
+  events:
+    status: not-applicable
+    reason: 本 Change 不新增领域事件或消息契约
+    design_ids: []
+  migration:
+    status: required
+    reason: Release Evidence 语义调整必须兼容既有 Change 工件
+    design_ids: [MIG-GOV-MIN-001]
+  performance:
+    status: not-applicable
+    reason: 仅执行当前 PR 声明 Change 的测试并设置单命令超时
+    design_ids: []
+  security_privacy:
+    status: required
+    reason: PR 控制的测试命令必须隔离凭证且 high-risk 必须人类批准
+    design_ids: [SEC-GOV-MIN-001]
+  module_consistency:
+    status: required
+    reason: 新执行器和增强校验继续遵守 tools 与 GitHub Workflow 边界
+    design_ids: [MODULE-GOV-MIN-001, MODULE-GOV-MIN-002, MODULE-GOV-MIN-003, MODULE-GOV-MIN-004]
+  tests_traceability:
+    status: required
+    reason: 四项门禁和 Release 简化均必须有正反例回归
+    design_ids: [TRACE-GOV-MIN-001]
+facts:
+  - id: FACT-GOV-MIN-001
+    statement: tools/check.py 当前校验 Test Registry 结构但不执行其中注册命令
+    source: {type: repository, reference: tools/check.py}
+  - id: FACT-GOV-MIN-002
+    statement: validate_pr_change_strict.py 当前只按目录和 Change 类型做最低范围分类
+    source: {type: repository, reference: tools/validate_pr_change_strict.py}
+  - id: FACT-GOV-MIN-003
+    statement: AGENTS.md 已规定 high-risk Change 需要独立人类 APPROVED
+    source: {type: repository, reference: AGENTS.md}
+  - id: FACT-GOV-MIN-004
+    statement: Issue 18 明确要求仅补四项高收益低维护成本的必要约束
+    source: {type: issue, reference: gyguan/genealogy-v2#18}
+assumptions:
+  - id: ASM-GOV-MIN-001
+    statement: 常用 Python Node Maven Gradle Runner 足以覆盖当前仓库近期测试需求
+    status: confirmed
+    blocking: false
+open_questions: []
+definitions:
+  - id: FLOW-GOV-MIN-001
+    kind: flow
+    section: 方案概览
+    summary: PR 先执行确定性校验和当前 Change 注册测试，再完成 Codex 与按 Profile 分级的人类评审
+    basis: [FACT-GOV-MIN-001, FACT-GOV-MIN-003, FACT-GOV-MIN-004]
+    specs: [SPEC-GOV-MIN-001, SPEC-GOV-MIN-004, SPEC-GOV-MIN-005]
+    tests: [TEST-GOV-MIN-TRACE-001]
+  - id: MODULE-GOV-MIN-001
+    kind: module
+    section: 接口与模块边界
+    summary: run_change_tests.py 解析当前 PR Change 并在无凭证环境执行白名单测试命令
+    basis: [FACT-GOV-MIN-001, ASM-GOV-MIN-001, SPEC-GOV-MIN-001]
+    specs: [SPEC-GOV-MIN-001]
+    tests: [TEST-GOV-MIN-001]
+  - id: MODULE-GOV-MIN-002
+    kind: module
+    section: 接口与模块边界
+    summary: validate_pr_change_strict.py 比较实际 Domain Decision Capability 与声明范围
+    basis: [FACT-GOV-MIN-002, SPEC-GOV-MIN-002]
+    specs: [SPEC-GOV-MIN-002]
+    tests: [TEST-GOV-MIN-002]
+  - id: MODULE-GOV-MIN-003
+    kind: module
+    section: 接口与模块边界
+    summary: strict Change 与 machine Design 校验器阻断评审态模板占位 ID
+    basis: [SPEC-GOV-MIN-003]
+    specs: [SPEC-GOV-MIN-003]
+    tests: [TEST-GOV-MIN-003]
+  - id: MODULE-GOV-MIN-004
+    kind: module
+    section: 接口与模块边界
+    summary: validate_pr.py 根据声明 Change Profile 对 high-risk 增加当前 Head 人类批准要求
+    basis: [FACT-GOV-MIN-003, SPEC-GOV-MIN-004]
+    specs: [SPEC-GOV-MIN-004]
+    tests: [TEST-GOV-MIN-004]
+  - id: MIG-GOV-MIN-001
+    kind: migration
+    section: 迁移方案
+    summary: Release Evidence 改为绑定最终 PR Head 和校验结果而非合入前 Merge SHA
+    basis: [FACT-GOV-MIN-004, SPEC-GOV-MIN-005]
+    specs: [SPEC-GOV-MIN-005]
+    tests: [TEST-GOV-MIN-005]
+  - id: SEC-GOV-MIN-001
+    kind: security
+    section: 安全与隐私
+    summary: 注册测试子进程使用最小环境隔离 Token 且 high-risk 只接受非作者人类批准
+    basis: [FACT-GOV-MIN-003, SPEC-GOV-MIN-001, SPEC-GOV-MIN-004]
+    specs: [SPEC-GOV-MIN-001, SPEC-GOV-MIN-004]
+    tests: [TEST-GOV-MIN-SEC-001]
+  - id: TRACE-GOV-MIN-001
+    kind: traceability
+    section: 测试 Seam
+    summary: 每项必要门禁和 Release 简化都有注册测试并由当前 PR 测试执行器真实运行
+    basis: [SPEC-GOV-MIN-001, SPEC-GOV-MIN-002, SPEC-GOV-MIN-003, SPEC-GOV-MIN-004, SPEC-GOV-MIN-005]
+    specs: [SPEC-GOV-MIN-001, SPEC-GOV-MIN-002, SPEC-GOV-MIN-003, SPEC-GOV-MIN-004, SPEC-GOV-MIN-005]
+    tests: [TEST-GOV-MIN-TRACE-001]
+traceability:
+  - spec: SPEC-GOV-MIN-001
+    design_ids: [FLOW-GOV-MIN-001, MODULE-GOV-MIN-001, SEC-GOV-MIN-001, TRACE-GOV-MIN-001]
+    tests: [TEST-GOV-MIN-001, TEST-GOV-MIN-SEC-001, TEST-GOV-MIN-TRACE-001]
+  - spec: SPEC-GOV-MIN-002
+    design_ids: [MODULE-GOV-MIN-002, TRACE-GOV-MIN-001]
+    tests: [TEST-GOV-MIN-002, TEST-GOV-MIN-TRACE-001]
+  - spec: SPEC-GOV-MIN-003
+    design_ids: [MODULE-GOV-MIN-003, TRACE-GOV-MIN-001]
+    tests: [TEST-GOV-MIN-003, TEST-GOV-MIN-TRACE-001]
+  - spec: SPEC-GOV-MIN-004
+    design_ids: [FLOW-GOV-MIN-001, MODULE-GOV-MIN-004, SEC-GOV-MIN-001, TRACE-GOV-MIN-001]
+    tests: [TEST-GOV-MIN-004, TEST-GOV-MIN-SEC-001, TEST-GOV-MIN-TRACE-001]
+  - spec: SPEC-GOV-MIN-005
+    design_ids: [FLOW-GOV-MIN-001, MIG-GOV-MIN-001, TRACE-GOV-MIN-001]
+    tests: [TEST-GOV-MIN-005, TEST-GOV-MIN-TRACE-001]
